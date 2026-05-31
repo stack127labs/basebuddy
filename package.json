@@ -1,7 +1,7 @@
 {
   "name": "basebuddy",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.2.0",
   "license": "AGPL-3.0-or-later",
   "description": "Open-source Supabase CMS and self-hosted editor for existing Supabase and Postgres databases.",
   "keywords": [

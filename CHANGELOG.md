@@ -8,6 +8,21 @@ This project follows a practical changelog format. Dates use `YYYY-MM-DD`.
 
 No unreleased changes yet.
 
+## 0.2.0 - App Data Backend Setup Flow - 2026-05-31
+
+### Added
+
+- First-run onboarding now starts with a BaseBuddy app-data storage choice.
+- Added support for three app-data backends: `basebuddy-data/`, the same Supabase/Postgres database as content, or a separate Supabase/Postgres database.
+- Added CLI commands for DB-backed app data: `pnpm basebuddy app-data:sql`, `pnpm basebuddy app-data:migrate`, and `pnpm basebuddy app-data:check`.
+- Added setup guidance for preparing the BaseBuddy-owned `basebuddy.app_state` and `basebuddy.audit_events` tables.
+- Added a detailed app-data storage comparison doc for choosing between the three backend options.
+
+### Changed
+
+- Setup, CLI, install, configuration, and deployment docs now explain when to use `basebuddy-data/` and when to use DB-backed app data.
+- Public agent instructions now include the app-data migration/check flow so AI agents can set up DB-backed installs without guessing.
+
 ## 0.1.0 - Initial Public Release - 2026-05-30
 
 ### Added
