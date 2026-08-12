@@ -1,9 +1,19 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
+import { getDemoDomainRedirect } from "@/lib/domain-migration";
 import { buildContentSecurityPolicy } from "@/lib/security/headers";
 
 export async function middleware(request: NextRequest) {
+  const redirectUrl = getDemoDomainRedirect(
+    new URL(request.nextUrl.toString()),
+    request.headers?.get?.("host") ?? null,
+  );
+
+  if (redirectUrl) {
+    return NextResponse.redirect(redirectUrl, 308);
+  }
+
   const nonce = crypto.randomUUID();
   const requestHeaders = new Headers(request.headers);
   const contentSecurityPolicy = buildContentSecurityPolicy({
