@@ -12,7 +12,7 @@ This page gets BaseBuddy running locally and points you to the first setup scree
 ## Install
 
 ```sh
-git clone git@github.com:basebuddy-cms/basebuddy.git
+git clone git@github.com:version127/basebuddy.git
 cd basebuddy
 pnpm install
 pnpm dev

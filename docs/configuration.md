@@ -84,8 +84,8 @@ Optional public env values:
 
 ```sh
 NEXT_PUBLIC_BASEBUDDY_APP_NAME=BaseBuddy
-NEXT_PUBLIC_BASEBUDDY_DOCS_URL=https://basebuddycms.com/docs
-NEXT_PUBLIC_BASEBUDDY_SUPPORT_URL=https://basebuddycms.com/support
+NEXT_PUBLIC_BASEBUDDY_DOCS_URL=https://basebuddy.version127.com/docs
+NEXT_PUBLIC_BASEBUDDY_SUPPORT_URL=https://basebuddy.version127.com/support
 NEXT_PUBLIC_SITE_INDEXABLE=false
 ```
 

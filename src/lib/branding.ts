@@ -24,8 +24,8 @@ const normalizeHttpUrl = (value: string | undefined) => {
   }
 };
 
-const defaultDocsUrl = "https://basebuddycms.com/docs";
-const defaultSupportUrl = "https://basebuddycms.com/support";
+const defaultDocsUrl = "https://basebuddy.version127.com/docs";
+const defaultSupportUrl = "https://basebuddy.version127.com/support";
 
 export const getBaseBuddyBranding = (env: BrandingEnv = process.env) => ({
   appName: normalizeText(env.NEXT_PUBLIC_BASEBUDDY_APP_NAME, "BaseBuddy"),

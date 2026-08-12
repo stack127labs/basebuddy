@@ -30,8 +30,8 @@ No unreleased changes yet.
 - BaseBuddy self-host app for mapping existing Supabase and Postgres schemas into an editor.
 - Public self-host documentation for installation, configuration, mapping, editing, permissions, deployment, operations, security, and troubleshooting.
 - Support guides for common setup and editing tasks.
-- Hosted demo deployment path for `demo.basebuddycms.com`.
-- Public website deployment path for `basebuddycms.com`.
+- Hosted demo deployment path for `demo.basebuddy.version127.com`.
+- Public website deployment path for `basebuddy.version127.com`.
 - Project mapping flow for posts, authors, categories, tags, media, files, SEO fields, status fields, and sidebar fields.
 - Safe editing model where normal save writes dirty fields only.
 - Explicit publish, unpublish, and archive actions.
@@ -42,4 +42,4 @@ No unreleased changes yet.
 
 ### Changed
 
-- Public repository metadata now points to `https://basebuddycms.com`, `https://demo.basebuddycms.com`, and `https://github.com/basebuddy-cms/basebuddy`.
+- Public repository metadata now points to `https://basebuddy.version127.com`, `https://demo.basebuddy.version127.com`, and `https://github.com/version127/basebuddy`.
