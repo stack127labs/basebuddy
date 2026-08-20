@@ -9,15 +9,15 @@
 </p>
 
 <p align="center">
-  <a href="https://basebuddy.version127.com">Website</a>
+  <a href="https://basebuddy.stack127.com">Website</a>
   ·
-  <a href="https://demo.basebuddy.version127.com">Demo</a>
+  <a href="https://basebuddy-demo.stack127.com">Demo</a>
   ·
   <a href="./INSTALL.md">Install</a>
   ·
-  <a href="https://basebuddy.version127.com/docs">Docs</a>
+  <a href="https://basebuddy.stack127.com/docs">Docs</a>
   ·
-  <a href="https://basebuddy.version127.com/support">Support</a>
+  <a href="https://basebuddy.stack127.com/support">Support</a>
   ·
   <a href="./LICENSE">License</a>
   ·
@@ -27,7 +27,7 @@
   ·
   <a href="./CHANGELOG.md">Changelog</a>
   ·
-  <a href="https://github.com/version127/basebuddy">GitHub</a>
+  <a href="https://github.com/stack127labs/basebuddy">GitHub</a>
 </p>
 
 ![BaseBuddy maps existing database columns into an editor](./docs/assets/basebuddy-mapping-workflow.png)
@@ -90,7 +90,7 @@ You need:
 Clone and install:
 
 ```sh
-git clone git@github.com:version127/basebuddy.git
+git clone git@github.com:stack127labs/basebuddy.git
 cd basebuddy
 pnpm install
 pnpm dev
@@ -194,8 +194,8 @@ pnpm test:e2e
 Start with:
 
 - [Install guide](./INSTALL.md)
-- [Supabase CMS](https://basebuddy.version127.com/docs/supabase-cms)
-- [WordPress-like editor for Supabase](https://basebuddy.version127.com/docs/wordpress-like-editor-for-supabase)
+- [Supabase CMS](https://basebuddy.stack127.com/docs/supabase-cms)
+- [WordPress-like editor for Supabase](https://basebuddy.stack127.com/docs/wordpress-like-editor-for-supabase)
 - [Configuration](./docs/configuration.md)
 - [Onboarding](./docs/onboarding.md)
 - [CLI](./docs/cli.md)

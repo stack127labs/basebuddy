@@ -10,7 +10,7 @@ export const getDemoDomainRedirect = (requestUrl: URL, hostHeader: string | null
 
   const redirectUrl = new URL(requestUrl.toString());
   redirectUrl.protocol = "https:";
-  redirectUrl.hostname = "demo.basebuddy.version127.com";
+  redirectUrl.hostname = "basebuddy-demo.stack127.com";
   redirectUrl.port = "";
   return redirectUrl;
 };

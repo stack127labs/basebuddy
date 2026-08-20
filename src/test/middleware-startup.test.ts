@@ -79,7 +79,7 @@ describe("middleware startup", () => {
 
     expect(response.status).toBe(308);
     expect(nextResponseRedirectMock).toHaveBeenCalledWith(
-      new URL("https://demo.basebuddy.version127.com/projects/demo?tab=posts"),
+      new URL("https://basebuddy-demo.stack127.com/projects/demo?tab=posts"),
       308,
     );
     expect(nextResponseNextMock).not.toHaveBeenCalled();
