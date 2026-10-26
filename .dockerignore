@@ -1,0 +1,36 @@
+.git
+.github
+.next
+website/.next
+node_modules
+website/node_modules
+playwright-report
+test-results
+tmp
+coverage
+logs
+*.log
+*.tsbuildinfo
+.DS_Store
+
+# Local secrets and machine-only config.
+.env
+.env.*
+
+# Agent and planning files are not needed inside deployment images.
+.agents
+agents
+implementation_docs
+documentation
+skills-lock.json
+basebuddy-data
+basebuddy.config*.json
+!basebuddy.config.example.json
+*.audit.jsonl
+*.tar.gz
+*.dump
+.codex
+.aws
+.playwright-cli
+promotion_assets
+config file implementation docs

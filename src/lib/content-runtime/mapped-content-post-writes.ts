@@ -43,6 +43,7 @@ import {
   buildContentUpdateByIdQuery,
 } from "./adapter/query-builders";
 import { withContentAdapterTransaction } from "./adapter/transaction";
+import { withPostgresPostWriteLock } from "./adapter/postgres/post-write-lock";
 import { getMappedContentPostById } from "./mapped-content-post-reads";
 import {
   createContentRedirectEntry,
@@ -65,6 +66,7 @@ type MappedContentUpdatePostInput = {
   contentMarkdown?: string | null;
   customFields?: Record<string, unknown>;
   expectedUpdatedAt?: string | null;
+  expectedVersion?: string;
   excerpt?: string | null;
   focusKeyword?: string | null;
   featuredImageUrl?: string | null;
@@ -532,7 +534,7 @@ export const createMappedContentPost = async ({
   });
 };
 
-export const updateMappedContentPost = async ({
+const updateLockedMappedContentPost = async ({
   client,
   mapping,
   authorId,
@@ -543,6 +545,7 @@ export const updateMappedContentPost = async ({
   contentMarkdown,
   customFields,
   expectedUpdatedAt,
+  expectedVersion,
   excerpt,
   focusKeyword,
   featuredImageUrl,
@@ -674,7 +677,8 @@ export const updateMappedContentPost = async ({
   const expectedUpdatedAtToken = normalizeOptionalPostTimestamp(expectedUpdatedAt);
   const currentUpdatedAtToken = normalizeOptionalPostTimestamp(existingPost.updatedAt);
 
-  if (expectedUpdatedAtToken !== undefined && expectedUpdatedAtToken !== currentUpdatedAtToken) {
+  if ((expectedVersion !== undefined && expectedVersion !== existingPost.versionToken) ||
+      (expectedVersion === undefined && expectedUpdatedAtToken !== undefined && expectedUpdatedAtToken !== currentUpdatedAtToken)) {
     throw createContentAdapterOperationError([
       {
         code: "stale_row_conflict",
@@ -1183,7 +1187,7 @@ export const updateMappedContentPost = async ({
     customRelationWrites.length > 0;
 
   if (hasRelationWrites) {
-    await withContentAdapterTransaction(client, async () => {
+    await (async () => {
       await applyPostRowUpdate();
 
       for (const scalarWrite of pendingScalarRelationWrites) {
@@ -1261,7 +1265,7 @@ export const updateMappedContentPost = async ({
           relation: relationWrite.relation,
         });
       }
-    });
+    })();
   } else {
     await applyPostRowUpdate();
   }
@@ -1272,3 +1276,6 @@ export const updateMappedContentPost = async ({
     postId,
   });
 };
+
+export const updateMappedContentPost = async (input: Parameters<typeof updateLockedMappedContentPost>[0]) =>
+  withPostgresPostWriteLock(input, () => updateLockedMappedContentPost(input));

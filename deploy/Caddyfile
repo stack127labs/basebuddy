@@ -1,0 +1,3 @@
+{$BASEBUDDY_DOMAIN} {
+    reverse_proxy basebuddy:8080
+}

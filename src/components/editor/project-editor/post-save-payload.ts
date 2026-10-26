@@ -90,6 +90,7 @@ const buildPostSaveFields = (
   status: sourcePost.status,
   tagIds: sourcePost.tagIds,
   title: sourcePost.title,
+  updatedAt: sourcePost.updatedAt,
 });
 
 export const buildProjectEditorPostSavePayloadFields = ({

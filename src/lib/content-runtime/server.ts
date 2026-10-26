@@ -992,6 +992,8 @@ const getBoundContentPostRevisionDependencies = (context: ContentProjectContext)
         slug?: string;
         status?: ContentPost["status"];
         title?: string;
+        expectedUpdatedAt?: string | null;
+        expectedVersion?: string;
         updatedAt?: string | null;
       }) =>
         updateContentPostState({
@@ -1793,6 +1795,8 @@ export const updateContentPost = async ({
   status,
   tagIds,
   title,
+  expectedUpdatedAt,
+  expectedVersion,
   updatedAt,
 }: {
   authorId?: string | null;
@@ -1816,6 +1820,8 @@ export const updateContentPost = async ({
   status?: ContentPost["status"];
   tagIds?: string[];
   title?: string;
+  expectedUpdatedAt?: string | null;
+  expectedVersion?: string;
   updatedAt?: string | null;
 }) => {
   const context = await getRequiredContentProjectContext(projectId);
@@ -1842,6 +1848,8 @@ export const updateContentPost = async ({
     status,
     tagIds,
     title,
+    expectedUpdatedAt,
+    expectedVersion,
     updatedAt,
   });
 
@@ -1870,6 +1878,8 @@ export const publishContentPost = async ({
   slug,
   tagIds,
   title,
+  expectedUpdatedAt,
+  expectedVersion,
   updatedAt,
 }: {
   authorId?: string | null;
@@ -1892,6 +1902,8 @@ export const publishContentPost = async ({
   slug?: string;
   tagIds?: string[];
   title?: string;
+  expectedUpdatedAt?: string | null;
+  expectedVersion?: string;
   updatedAt?: string | null;
 }) => {
   const context = await getRequiredContentProjectContext(projectId);
@@ -1917,6 +1929,8 @@ export const publishContentPost = async ({
     slug,
     tagIds,
     title,
+    expectedUpdatedAt,
+    expectedVersion,
     updatedAt,
   });
 
@@ -1944,6 +1958,8 @@ export const unpublishContentPost = async ({
   slug,
   tagIds,
   title,
+  expectedUpdatedAt,
+  expectedVersion,
   updatedAt,
 }: {
   authorId?: string | null;
@@ -1965,6 +1981,8 @@ export const unpublishContentPost = async ({
   slug?: string;
   tagIds?: string[];
   title?: string;
+  expectedUpdatedAt?: string | null;
+  expectedVersion?: string;
   updatedAt?: string | null;
 }) => {
   const context = await getRequiredContentProjectContext(projectId);
@@ -1989,6 +2007,8 @@ export const unpublishContentPost = async ({
     slug,
     tagIds,
     title,
+    expectedUpdatedAt,
+    expectedVersion,
     updatedAt,
   });
 
@@ -2016,6 +2036,8 @@ export const archiveContentPost = async ({
   slug,
   tagIds,
   title,
+  expectedUpdatedAt,
+  expectedVersion,
   updatedAt,
 }: {
   authorId?: string | null;
@@ -2037,6 +2059,8 @@ export const archiveContentPost = async ({
   slug?: string;
   tagIds?: string[];
   title?: string;
+  expectedUpdatedAt?: string | null;
+  expectedVersion?: string;
   updatedAt?: string | null;
 }) => {
   const context = await getRequiredContentProjectContext(projectId);
@@ -2061,6 +2085,8 @@ export const archiveContentPost = async ({
     slug,
     tagIds,
     title,
+    expectedUpdatedAt,
+    expectedVersion,
     updatedAt,
   });
 

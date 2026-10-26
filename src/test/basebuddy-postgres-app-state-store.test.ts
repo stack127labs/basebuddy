@@ -7,6 +7,7 @@ import {
   BASEBUDDY_APP_STATE_CONFIG_ID,
   appendPostgresBaseBuddyAuditEvent,
   createPostgresBaseBuddyConfigStore,
+  getPostgresBaseBuddyAppStateWriteAccess,
   type PostgresBaseBuddyConfigQueryClient,
 } from "@/lib/basebuddy-config/postgres-app-state-store";
 
@@ -136,5 +137,58 @@ describe("Postgres BaseBuddy app-state store", () => {
         }),
       ],
     );
+  });
+
+  it("reads existing app data without requiring schema creation privileges", async () => {
+    const client = createMemoryQuery();
+    const store = createPostgresBaseBuddyConfigStore(client);
+    await store.ensure({ now: fixedNow });
+    vi.mocked(client.query).mockClear();
+
+    await store.load();
+    await appendPostgresBaseBuddyAuditEvent(client, {
+      createdAt: fixedNow,
+      id: "audit_runtime",
+      type: "auth.logout",
+    });
+
+    expect(vi.mocked(client.query).mock.calls.every(([sql]) => !/create\s+(schema|table)/i.test(sql))).toBe(true);
+  });
+
+  it("retries a conflicting write against the latest app data", async () => {
+    let config = createDefaultBaseBuddyConfig({ now: fixedNow });
+    let updates = 0;
+    const query = vi.fn(async (sql: string, values: unknown[] = []) => {
+      if (/select config/i.test(sql)) return { rows: [{ config: structuredClone(config) }] };
+      if (/update basebuddy.app_state/i.test(sql)) {
+        updates += 1;
+        if (updates === 1) {
+          config.install.updatedAt = "2026-05-28T00:00:00.000Z";
+          return { rows: [] };
+        }
+        config = values[1] as typeof config;
+        return { rows: [{ config }] };
+      }
+      return { rows: [] };
+    });
+    const store = createPostgresBaseBuddyConfigStore({ query } as unknown as PostgresBaseBuddyConfigQueryClient);
+
+    const saved = await store.write((current) => ({ ...current, install: { ...current.install, createdAt: "2026-05-26T00:00:00.000Z" } }));
+
+    expect(updates).toBe(2);
+    expect(saved.install.updatedAt).toBe("2026-05-28T00:00:00.000Z");
+    expect(saved.install.createdAt).toBe("2026-05-26T00:00:00.000Z");
+    expect(query.mock.calls.filter(([sql]) => /update basebuddy.app_state/i.test(sql)).every(([sql, values]) => /config\s*=\s*\$3/i.test(sql) && values.length === 3)).toBe(true);
+  });
+
+  it("explains how to prepare missing app-data tables", async () => {
+    const query = vi.fn().mockRejectedValue(Object.assign(new Error("relation does not exist"), { code: "42P01" }));
+    const store = createPostgresBaseBuddyConfigStore({ query });
+    await expect(store.loadOptional()).rejects.toThrow(/app-data:migrate/);
+  });
+
+  it("does not report read-only database app data as writable", async () => {
+    const client = { query: vi.fn().mockResolvedValue({ rows: [{ writable: false }] }) };
+    await expect(getPostgresBaseBuddyAppStateWriteAccess(client)).resolves.toBe(false);
   });
 });

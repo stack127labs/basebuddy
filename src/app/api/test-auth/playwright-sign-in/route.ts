@@ -39,6 +39,7 @@ const getPlaywrightRoleCredentials = (
 
 const isPlaywrightAuthRouteEnabled = () =>
   Boolean(
+    (process.env.NODE_ENV !== "production" || process.env.BASEBUDDY_TEST_BUILD === "1") &&
     process.env.BASEBUDDY_ENABLE_TEST_AUTH === "1" &&
       process.env.BASEBUDDY_PLAYWRIGHT_RUNTIME === "1" &&
       process.env.PLAYWRIGHT_BASE_URL?.trim() &&

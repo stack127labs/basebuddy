@@ -43,6 +43,11 @@ const createPost = (overrides: Partial<ContentPost> = {}): ContentPost => ({
 });
 
 describe("project editor post save payload", () => {
+  it("includes an edited timestamp as data without using it as the original conflict token", () => {
+    const persistedPost = createPost();
+    const currentPost = createPost({ updatedAt: "2026-04-02T00:00:00.000Z" });
+    expect(buildProjectEditorPostSavePayloadFields({ action: "update_post", currentPost, persistedPost, primaryMultiFieldEditorId: "body" })).toEqual({ updatedAt: currentPost.updatedAt });
+  });
   it("returns only changed scalar and nested fields for normal saves", () => {
     const persistedPost = createPost();
     const currentPost = createPost({

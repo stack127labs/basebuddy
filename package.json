@@ -1,7 +1,7 @@
 {
   "name": "basebuddy",
   "private": true,
-  "version": "0.2.0",
+  "version": "0.2.1",
   "license": "AGPL-3.0-or-later",
   "description": "Open-source Supabase CMS and self-hosted editor for existing Supabase and Postgres databases.",
   "keywords": [
@@ -22,15 +22,22 @@
     "overrides": {
       "@babel/runtime": "7.26.10",
       "brace-expansion@<1.1.13": "1.1.13",
-      "brace-expansion@>=2.0.0 <2.0.3": "2.0.3",
       "flatted": "3.4.2",
-      "happy-dom": "20.8.9",
+      "happy-dom": "21.0.4",
       "lodash": "4.18.1",
       "picomatch@<2.3.2": "2.3.2",
       "picomatch@>=4.0.0 <4.0.4": "4.0.4",
-      "postcss": "8.5.13",
+      "postcss": "8.5.31",
       "vite": "7.3.2",
-      "yaml": "2.8.3"
+      "yaml": "2.8.3",
+      "brace-expansion@>=2.0.0 <2.1.7": "2.1.7",
+      "ws": "8.22.0",
+      "sharp": "0.35.5",
+      "prosemirror-view": "1.42.8",
+      "source-map-js": "1.2.2",
+      "postcss-selector-parser": "7.1.7",
+      "nanoid@<3.3.18": "3.3.18",
+      "esbuild": "0.28.1"
     },
     "onlyBuiltDependencies": [
       "esbuild",
@@ -42,8 +49,8 @@
     "dev": "next dev --port 8080",
     "dev:playwright": "node --env-file=.env.playwright ./node_modules/next/dist/bin/next dev --port 3100",
     "build": "NEXT_PRIVATE_BUILD_WORKER=0 next build",
-    "build:e2e": "NEXT_PRIVATE_BUILD_WORKER=0 node --env-file=.env.playwright ./node_modules/next/dist/bin/next build",
-    "build:playwright": "NEXT_PRIVATE_BUILD_WORKER=0 node --env-file=.env.playwright ./node_modules/next/dist/bin/next build",
+    "build:e2e": "BASEBUDDY_TEST_BUILD=1 NEXT_PRIVATE_BUILD_WORKER=0 node --env-file=.env.playwright ./node_modules/next/dist/bin/next build",
+    "build:playwright": "BASEBUDDY_TEST_BUILD=1 NEXT_PRIVATE_BUILD_WORKER=0 node --env-file=.env.playwright ./node_modules/next/dist/bin/next build",
     "start": "next start --port 8080",
     "start:playwright": "node ./scripts/start-playwright-server.mjs",
     "perf:build": "node ./scripts/measure-next-build.mjs",
@@ -67,7 +74,7 @@
     "test:e2e:ui": "pnpm run build:e2e && node --env-file=.env.playwright ./node_modules/@playwright/test/cli.js test --ui"
   },
   "dependencies": {
-    "@hookform/resolvers": "^3.10.0",
+    "@hookform/resolvers": "5.2.2",
     "@radix-ui/react-accordion": "^1.2.11",
     "@radix-ui/react-alert-dialog": "^1.1.14",
     "@radix-ui/react-aspect-ratio": "^1.1.7",
@@ -96,17 +103,17 @@
     "@radix-ui/react-toggle-group": "^1.1.10",
     "@radix-ui/react-tooltip": "^1.2.7",
     "@supabase/ssr": "^0.9.0",
-    "@supabase/supabase-js": "^2.98.0",
+    "@supabase/supabase-js": "2.118.0",
     "@tanstack/react-query": "^5.83.0",
-    "@tiptap/core": "^3.20.1",
-    "@tiptap/extension-image": "^3.20.1",
-    "@tiptap/extension-link": "^3.20.1",
-    "@tiptap/extension-placeholder": "^3.20.1",
-    "@tiptap/extension-text-align": "^3.20.1",
-    "@tiptap/extension-underline": "^3.20.1",
-    "@tiptap/html": "^3.20.1",
-    "@tiptap/react": "^3.20.1",
-    "@tiptap/starter-kit": "^3.20.1",
+    "@tiptap/core": "3.32.0",
+    "@tiptap/extension-image": "3.32.0",
+    "@tiptap/extension-link": "3.32.0",
+    "@tiptap/extension-placeholder": "3.32.0",
+    "@tiptap/extension-text-align": "3.32.0",
+    "@tiptap/extension-underline": "3.32.0",
+    "@tiptap/html": "3.32.0",
+    "@tiptap/react": "3.32.0",
+    "@tiptap/starter-kit": "3.32.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
@@ -114,8 +121,8 @@
     "embla-carousel-react": "^8.6.0",
     "input-otp": "^1.4.2",
     "lucide-react": "^0.462.0",
-    "markdown-it": "^14.1.1",
-    "next": "15.5.15",
+    "markdown-it": "14.3.3",
+    "next": "15.5.28",
     "pg": "^8.20.0",
     "react": "18.3.1",
     "react-day-picker": "^8.10.1",
@@ -130,7 +137,9 @@
     "turndown": "^7.2.2",
     "vaul": "^0.9.9",
     "yoastseo": "^3.6.0",
-    "zod": "^3.25.76"
+    "zod": "4.6.7",
+    "proper-lockfile": "4.1.2",
+    "tsx": "^4.21.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.58.2",
@@ -143,12 +152,14 @@
     "@types/react-dom": "^18.3.7",
     "autoprefixer": "^10.4.21",
     "eslint": "^9.32.0",
-    "eslint-config-next": "15.5.15",
+    "eslint-config-next": "15.5.28",
     "jsdom": "^28.1.0",
     "postcss": "^8.5.13",
     "tailwindcss": "^3.4.17",
-    "tsx": "^4.21.0",
     "typescript": "^5.8.3",
     "vitest": "^3.2.4"
+  },
+  "engines": {
+    "node": ">=22.12.0"
   }
 }

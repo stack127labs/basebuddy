@@ -82,6 +82,20 @@ describe("Playwright test auth route", () => {
     expect(config.sessions).toHaveLength(0);
   });
 
+  it("stays unavailable in production when test flags are copied into a normal build", async () => {
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("BASEBUDDY_ENABLE_TEST_AUTH", "1");
+    vi.stubEnv("BASEBUDDY_PLAYWRIGHT_RUNTIME", "1");
+    vi.stubEnv("BASEBUDDY_TEST_BUILD", "0");
+    vi.stubEnv("PLAYWRIGHT_BASE_URL", "http://localhost:3100");
+    vi.stubEnv("PLAYWRIGHT_OWNER_EMAIL", "owner@example.com");
+    vi.stubEnv("PLAYWRIGHT_OWNER_PASSWORD", "password-123");
+    const { GET } = await import("@/app/api/test-auth/playwright-sign-in/route");
+    const response = await GET(new NextRequest("http://localhost:3100/api/test-auth/playwright-sign-in?role=owner"));
+    expect(response.status).toBe(404);
+    expect((await readConfig()).sessions).toHaveLength(0);
+  });
+
   it("stays unavailable until the Playwright runtime flag is present", async () => {
     vi.stubEnv("NODE_ENV", "test");
     vi.stubEnv("BASEBUDDY_ENABLE_TEST_AUTH", "1");
@@ -138,6 +152,7 @@ describe("Playwright test auth route", () => {
 
   it("allows production-mode Playwright smoke tests only inside the Playwright runtime", async () => {
     vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("BASEBUDDY_TEST_BUILD", "1");
     vi.stubEnv("BASEBUDDY_ENABLE_TEST_AUTH", "1");
     vi.stubEnv("BASEBUDDY_PLAYWRIGHT_RUNTIME", "1");
     vi.stubEnv("PLAYWRIGHT_BASE_URL", "http://localhost:3100");

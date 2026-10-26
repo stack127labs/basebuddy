@@ -172,6 +172,8 @@ export const handleContentRoutePost = async (request: Request, { projectId, user
         status: payload.status,
         tagIds: payload.tagIds,
         title: payload.title,
+        expectedUpdatedAt: payload.expectedUpdatedAt,
+        expectedVersion: payload.expectedVersion,
         updatedAt: payload.updatedAt,
       });
 
@@ -204,6 +206,8 @@ export const handleContentRoutePost = async (request: Request, { projectId, user
         slug: payload.slug,
         tagIds: payload.tagIds,
         title: payload.title,
+        expectedUpdatedAt: payload.expectedUpdatedAt,
+        expectedVersion: payload.expectedVersion,
         updatedAt: payload.updatedAt,
       });
 
@@ -235,6 +239,8 @@ export const handleContentRoutePost = async (request: Request, { projectId, user
         slug: payload.slug,
         tagIds: payload.tagIds,
         title: payload.title,
+        expectedUpdatedAt: payload.expectedUpdatedAt,
+        expectedVersion: payload.expectedVersion,
         updatedAt: payload.updatedAt,
       });
 
@@ -266,6 +272,8 @@ export const handleContentRoutePost = async (request: Request, { projectId, user
         slug: payload.slug,
         tagIds: payload.tagIds,
         title: payload.title,
+        expectedUpdatedAt: payload.expectedUpdatedAt,
+        expectedVersion: payload.expectedVersion,
         updatedAt: payload.updatedAt,
       });
 

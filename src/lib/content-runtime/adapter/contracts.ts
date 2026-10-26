@@ -111,6 +111,8 @@ type ContentAdapterMutablePostFields = {
   status?: ContentPostStatus;
   tagIds?: string[];
   title?: string;
+  expectedUpdatedAt?: string | null;
+  expectedVersion?: string;
   updatedAt?: string | null;
 };
 

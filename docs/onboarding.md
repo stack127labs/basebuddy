@@ -5,7 +5,7 @@
 Onboarding asks for:
 
 - required env values for auth signing, app-data backend selection, and database access;
-- owner name, email, and password;
+- the server setup token, owner name, email, and password;
 - setup checks that run automatically.
 
 The setup flow is:
@@ -34,6 +34,8 @@ pnpm basebuddy app-data:sql
 ```
 
 Then run the printed SQL in the database SQL editor.
+
+Set `BASEBUDDY_SETUP_TOKEN` to at least 32 random characters on the server before browser setup. Enter it in **Setup token** on the account step. It authorizes creation of the first owner. CLI setup can create the owner privately without this token.
 
 ## Ready State
 

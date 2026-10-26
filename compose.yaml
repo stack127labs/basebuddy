@@ -1,0 +1,18 @@
+services:
+  basebuddy:
+    build: .
+    image: ${BASEBUDDY_IMAGE:-basebuddy:local}
+    init: true
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - "127.0.0.1:${BASEBUDDY_PORT:-8080}:8080"
+    volumes:
+      - basebuddy-data:/app/basebuddy-data
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+
+volumes:
+  basebuddy-data:

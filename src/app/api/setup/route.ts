@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { timingSafeEqual } from "node:crypto";
 
 import { enforceRateLimit, parseJsonBody } from "@/lib/api/request-guards";
 import { createInitialBaseBuddySetup } from "@/lib/basebuddy-config/initial-setup";
+import { readBaseBuddySetupToken } from "@/lib/basebuddy-config/env";
 import {
   getBaseBuddyConfigSetupStatus,
   isBaseBuddyConfigSetupReady,
@@ -13,6 +15,7 @@ const setupCreatePayloadSchema = z
     ownerEmail: z.string().trim().min(1).max(320),
     ownerName: z.string().trim().min(1).max(160),
     ownerPassword: z.string().min(1).max(256),
+    setupToken: z.string().max(512).optional(),
   })
   .strict();
 
@@ -106,6 +109,14 @@ export const POST = async (request: Request) => {
 
   if (payloadResult.errorResponse) {
     return payloadResult.errorResponse;
+  }
+
+  const expectedToken = readBaseBuddySetupToken();
+  const suppliedToken = request.headers.get("x-basebuddy-setup-token") ?? payloadResult.data.setupToken ?? "";
+  const expected = Buffer.from(expectedToken ?? "");
+  const supplied = Buffer.from(suppliedToken);
+  if (!expectedToken || expected.length < 32 || supplied.length !== expected.length || !timingSafeEqual(expected, supplied)) {
+    return NextResponse.json({ error: "Enter the setup token configured on the server, or create the owner with the CLI before opening public access." }, { status: 403 });
   }
 
   try {

@@ -387,6 +387,7 @@ export type ContentPostFieldConflict = {
 export type ContentPostFieldConflicts = Record<string, ContentPostFieldConflict>;
 
 export type ContentPost = {
+  versionToken?: string;
   authorId: string | null;
   canWrite?: boolean;
   categoryIds: string[];

@@ -68,6 +68,8 @@ type ContentPostMutationInput = {
   slug?: string;
   tagIds?: string[];
   title?: string;
+  expectedUpdatedAt?: string | null;
+  expectedVersion?: string;
   updatedAt?: string | null;
 };
 
@@ -220,6 +222,8 @@ export const updateContentPost = async ({
   status,
   tagIds,
   title,
+  expectedUpdatedAt,
+  expectedVersion,
   updatedAt,
 }: {
   authorId?: string | null;
@@ -244,6 +248,8 @@ export const updateContentPost = async ({
   status?: ContentPost["status"];
   tagIds?: string[];
   title?: string;
+  expectedUpdatedAt?: string | null;
+  expectedVersion?: string;
   updatedAt?: string | null;
 }) => {
   const context = await dependencies.getProjectContext(projectId);
@@ -276,6 +282,8 @@ export const updateContentPost = async ({
     status,
     tagIds,
     title,
+    expectedUpdatedAt,
+    expectedVersion,
     updatedAt,
   });
 
@@ -304,6 +312,8 @@ export const publishContentPost = async ({
   slug,
   tagIds,
   title,
+  expectedUpdatedAt,
+  expectedVersion,
   updatedAt,
 }: ContentPostMutationInput) => {
   const context = await dependencies.getProjectContext(projectId);
@@ -335,6 +345,8 @@ export const publishContentPost = async ({
     slug,
     tagIds,
     title,
+    expectedUpdatedAt,
+    expectedVersion,
     updatedAt,
   });
 
@@ -362,6 +374,8 @@ export const unpublishContentPost = async ({
   slug,
   tagIds,
   title,
+  expectedUpdatedAt,
+  expectedVersion,
   updatedAt,
 }: ContentPostMutationInput) => {
   const context = await dependencies.getProjectContext(projectId);
@@ -392,6 +406,8 @@ export const unpublishContentPost = async ({
     slug,
     tagIds,
     title,
+    expectedUpdatedAt,
+    expectedVersion,
     updatedAt,
   });
 
@@ -419,6 +435,8 @@ export const archiveContentPost = async ({
   slug,
   tagIds,
   title,
+  expectedUpdatedAt,
+  expectedVersion,
   updatedAt,
 }: ContentPostMutationInput) => {
   const context = await dependencies.getProjectContext(projectId);
@@ -449,6 +467,8 @@ export const archiveContentPost = async ({
     slug,
     tagIds,
     title,
+    expectedUpdatedAt,
+    expectedVersion,
     updatedAt,
   });
 

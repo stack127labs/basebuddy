@@ -19,6 +19,6 @@ describe("next config startup", () => {
   it("lets the app boot far enough to render setup diagnostics without install env", async () => {
     const config = await import("../../next.config");
 
-    expect(config.default.env).toEqual({});
+    expect(config.default.env).toEqual({ BASEBUDDY_TEST_BUILD: "0" });
   });
 });

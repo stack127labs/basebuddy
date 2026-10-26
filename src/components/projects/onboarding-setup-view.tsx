@@ -28,6 +28,7 @@ import type {
 import { cn } from "@/lib/utils";
 
 type SetupFormState = {
+  setupToken: string;
   ownerEmail: string;
   ownerName: string;
   ownerPassword: string;
@@ -45,6 +46,7 @@ type TimelineItem = {
 };
 
 const initialFormState: SetupFormState = {
+  setupToken: "",
   ownerEmail: "",
   ownerName: "",
   ownerPassword: "",
@@ -509,6 +511,7 @@ export function OnboardingSetupView({
     ...appStateEnvKeys,
     "BASEBUDDY_AUTH_SECRET",
     "BASEBUDDY_CONTENT_DATABASE_URL",
+    "BASEBUDDY_SETUP_TOKEN",
   ];
   const supabaseStorageEnvKeys = [
     "BASEBUDDY_SUPABASE_URL",
@@ -528,6 +531,7 @@ export function OnboardingSetupView({
       ? ownerPasswordIssues.join(" ")
       : null;
   const canContinueFromAccount =
+    formState.setupToken.length >= 32 &&
     formState.ownerName.trim() &&
     ownerEmail &&
     !ownerEmailError &&
@@ -599,6 +603,7 @@ export function OnboardingSetupView({
           ownerEmail: formState.ownerEmail.trim(),
           ownerName: formState.ownerName.trim(),
           ownerPassword: formState.ownerPassword,
+          setupToken: formState.setupToken,
         }),
         headers: {
           "Content-Type": "application/json",
@@ -673,6 +678,7 @@ export function OnboardingSetupView({
     formState.ownerEmail,
     formState.ownerName,
     formState.ownerPassword,
+    formState.setupToken,
     revealTimeline,
     runningChecks,
   ]);
@@ -893,6 +899,17 @@ export function OnboardingSetupView({
       </div>
 
       <div className="space-y-4">
+        <Field
+          autoComplete="off"
+          disabled={runningChecks}
+          helper="Use the BASEBUDDY_SETUP_TOKEN value from your server environment. It authorizes creation of the first owner. You can also create the owner with the CLI."
+          id="setup-token"
+          label="Setup token"
+          onChange={updateField("setupToken")}
+          required
+          type="password"
+          value={formState.setupToken}
+        />
         <div className="grid gap-4 sm:grid-cols-2">
           <Field
             autoComplete="name"

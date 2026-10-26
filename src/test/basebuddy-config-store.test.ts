@@ -1,6 +1,8 @@
 import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -228,6 +230,20 @@ describe("BaseBuddy config store", () => {
     };
 
     expect(baseBuddyConfigSchema.safeParse(legacySecretBearingConfig).success).toBe(false);
+  });
+
+  it("preserves changes from the app and CLI running in separate processes", async () => {
+    await ensureBaseBuddyConfig({ now: fixedNow });
+    const worker = join(originalCwd, "src/test/fixtures/config-write-worker.mjs");
+    const loader = join(originalCwd, "node_modules/tsx/dist/loader.mjs");
+    const run = promisify(execFile);
+    await Promise.all(["app", "cli"].map((id) => run(process.execPath, ["--import", loader, worker, id], {
+      cwd: tempDir,
+      env: { ...process.env, BASEBUDDY_APP_STATE_BACKEND: "basebuddy-data", TSX_TSCONFIG_PATH: join(originalCwd, "tsconfig.json") },
+      timeout: 12000,
+    })));
+    const config = await loadBaseBuddyConfig();
+    expect(config.users.map((user) => user.id).sort()).toEqual(["app-0", "app-1", "app-2", "cli-0", "cli-1", "cli-2"]);
   });
 
   it("keeps redacted status output free of local password hashes", async () => {

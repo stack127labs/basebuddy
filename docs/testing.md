@@ -77,3 +77,9 @@ flowchart LR
   Build --> Setup["pnpm setup:check"]
   Setup --> E2E["pnpm test:e2e when routes/UI changed"]
 ```
+
+## Database and Docker release checks
+
+Use an isolated database whose name starts with `basebuddy_test` for `src/test/postgres-release.integration.test.ts`. Set `BASEBUDDY_TEST_DATABASE_URL` through the test environment. The suite checks restricted roles, concurrent app-data writes, stale editor snapshots, and JSON sibling patches. Never point it at production.
+
+Build the app image and run `node scripts/smoke-docker.mjs <image>` against the test database. Configure `BASEBUDDY_DOCKER_TEST_DATABASE_URL` and an optional Docker test network. This creates and removes its own test containers and volumes, verifies private bootstrap and diagnostics, replaces the container, and restores an app-data archive.

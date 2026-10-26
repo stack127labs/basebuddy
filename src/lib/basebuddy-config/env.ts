@@ -10,6 +10,7 @@ import {
 } from "./app-state-backend";
 
 export const BASEBUDDY_AUTH_SECRET_ENV = "BASEBUDDY_AUTH_SECRET";
+export const BASEBUDDY_SETUP_TOKEN_ENV = "BASEBUDDY_SETUP_TOKEN";
 export const BASEBUDDY_CONTENT_DATABASE_URL_ENV = "BASEBUDDY_CONTENT_DATABASE_URL";
 export const BASEBUDDY_SUPABASE_URL_ENV = "BASEBUDDY_SUPABASE_URL";
 export const BASEBUDDY_SUPABASE_PUBLISHABLE_KEY_ENV =
@@ -22,6 +23,7 @@ const BASEBUDDY_RUNTIME_ENV_KEYS = [
   BASEBUDDY_APP_STATE_BACKEND_ENV,
   BASEBUDDY_APP_STATE_DATABASE_URL_ENV,
   BASEBUDDY_AUTH_SECRET_ENV,
+  BASEBUDDY_SETUP_TOKEN_ENV,
   BASEBUDDY_CONTENT_DATABASE_URL_ENV,
   BASEBUDDY_SUPABASE_URL_ENV,
   BASEBUDDY_SUPABASE_PUBLISHABLE_KEY_ENV,
@@ -127,6 +129,9 @@ const resolveBaseBuddyRuntimeEnv = (env: NodeJS.ProcessEnv) =>
         ...env,
       }
     : env;
+
+export const readBaseBuddySetupToken = () =>
+  normalizeEnvValue(resolveBaseBuddyRuntimeEnv(process.env)[BASEBUDDY_SETUP_TOKEN_ENV]);
 
 export const readBaseBuddyRuntimeEnv = (
   env: NodeJS.ProcessEnv = process.env,

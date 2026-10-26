@@ -13,6 +13,8 @@ You can also store BaseBuddy app data in Supabase/Postgres:
 - `BASEBUDDY_APP_STATE_BACKEND=supabase-same-project` stores app data in the same database as your content, inside the BaseBuddy-owned `basebuddy` schema.
 - `BASEBUDDY_APP_STATE_BACKEND=supabase-split-project` plus `BASEBUDDY_APP_STATE_DATABASE_URL` stores app data in a separate database.
 
+For a container installation, use the tested [Docker deployment guide](./docs/deployment.md). It includes persistence, HTTPS, and upgrade instructions.
+
 ## Prerequisites
 
 - Node.js 22 recommended.
@@ -98,6 +100,7 @@ This creates only `basebuddy.app_state` and `basebuddy.audit_events`.
 
 On `/onboarding`, complete **Connect to your database**, prepare app-data tables when that page appears, then enter:
 
+- the value of `BASEBUDDY_SETUP_TOKEN` from the server environment, at least 32 random characters
 - owner name
 - owner email
 - owner password

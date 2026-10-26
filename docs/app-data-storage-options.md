@@ -315,3 +315,7 @@ Choose the same database as content if you want one database to manage and can g
 - [Operations](./operations.md)
 - [Security](../SECURITY.md)
 - [Troubleshooting](./troubleshooting.md)
+
+## Current deployment limit
+
+Run one BaseBuddy app instance. Database-backed app data survives restarts and coordinates concurrent configuration writes, but editor presence, caches, and request limits remain local to each process. Shared app data alone does not make a multi-instance deployment supported.

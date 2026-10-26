@@ -18,6 +18,7 @@ import {
 } from "./server-runtime-cache";
 import { getContentPostCacheKey } from "./server-runtime-cache-keys";
 import type { ContentPost } from "./shared";
+import { createContentPostVersionToken } from "./adapter/version-token";
 import type {
   ContentEntityMapping,
   ContentProjectMapping,
@@ -90,11 +91,12 @@ export const loadMappedContentHydratedPost = async ({
       throw new Error("Could not find that post in this project.");
     }
 
-    return mapMappedContentPostRow({
+    const post = await mapMappedContentPostRow({
       client,
       postRow: result.rows[0] ?? {},
       runtime,
     });
+    return { ...post, versionToken: createContentPostVersionToken(result.rows[0], post) };
   };
 
   if (!projectId) {

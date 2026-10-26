@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.2.1
+
+- Patch production dependencies and update the lockfile.
+- Require server authorization for browser creation of the first owner.
+- Protect app-data writes across processes and keep migrations out of runtime reads and audit appends.
+- Check real app-data write privileges during setup diagnostics.
+- Lock post rows before patch reads and detect stale editor snapshots independently of editable timestamps.
+- Add non-root Docker deployment, Compose persistence, optional Caddy HTTPS, health and readiness routes, and CI.
+- Compile test sign-in out of normal production builds.
+- Add Postgres concurrency and restricted-role regressions, plus Docker restart and backup/restore checks.
+
+
 All notable public changes to BaseBuddy will be documented here.
 
 This project follows a practical changelog format. Dates use `YYYY-MM-DD`.

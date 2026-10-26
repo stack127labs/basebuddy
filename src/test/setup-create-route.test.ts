@@ -23,6 +23,7 @@ const createSetupRequest = (payload: unknown) =>
       "Content-Type": "application/json",
       host: "localhost",
       origin: "http://localhost",
+      "x-basebuddy-setup-token": "test-setup-token-at-least-32-characters",
     },
     method: "POST",
   });
@@ -38,6 +39,7 @@ describe("setup create route", () => {
     tempDir = await mkdtemp(join(tmpdir(), "basebuddy-setup-route-"));
     process.chdir(tempDir);
     vi.stubEnv("BASEBUDDY_AUTH_SECRET", "env-auth-secret-value-with-32-plus-chars");
+    vi.stubEnv("BASEBUDDY_SETUP_TOKEN", "test-setup-token-at-least-32-characters");
     vi.stubEnv(
       "BASEBUDDY_CONTENT_DATABASE_URL",
       "postgresql://content-user:db-pass@example.com:5432/postgres",
@@ -89,12 +91,29 @@ describe("setup create route", () => {
     expect(existsSync(join(tempDir, ".basebuddy"))).toBe(false);
   });
 
+  it("rejects first-owner creation without the server setup credential", async () => {
+    const request = createSetupRequest(setupPayload);
+    request.headers.delete("x-basebuddy-setup-token");
+    request.headers.delete("origin");
+    const response = await POST(request);
+    expect(response.status).toBe(403);
+    expect(existsSync(getBaseBuddyConfigPath())).toBe(false);
+  });
+
+  it("rejects an incorrect setup credential", async () => {
+    const request = createSetupRequest(setupPayload);
+    request.headers.set("x-basebuddy-setup-token", "wrong");
+    const response = await POST(request);
+    expect(response.status).toBe(403);
+  });
+
   it("can create setup from env values written to .env.local after the server starts", async () => {
     vi.unstubAllEnvs();
     await writeFile(
       join(tempDir, ".env.local"),
       [
         "BASEBUDDY_AUTH_SECRET=file-auth-secret-value-with-32-plus-chars",
+        "BASEBUDDY_SETUP_TOKEN=test-setup-token-at-least-32-characters",
         "BASEBUDDY_CONTENT_DATABASE_URL=postgresql://file-user:file-pass@example.com:5432/postgres",
         "",
       ].join("\n"),
@@ -173,6 +192,7 @@ describe("setup create route", () => {
 
   it("requires env credentials before creating the first owner", async () => {
     vi.unstubAllEnvs();
+    vi.stubEnv("BASEBUDDY_SETUP_TOKEN", "test-setup-token-at-least-32-characters");
 
     const response = await POST(createSetupRequest(setupPayload));
     const body = await response.json();

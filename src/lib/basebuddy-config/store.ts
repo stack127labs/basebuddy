@@ -2,6 +2,7 @@ import { constants } from "node:fs";
 import { access, mkdir, readFile, rename, unlink, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
 import { Pool } from "pg";
+import lockfile from "proper-lockfile";
 
 import {
   BASEBUDDY_APP_STATE_BACKEND_ENV,
@@ -14,7 +15,7 @@ import {
   readBaseBuddyRuntimeEnv,
   redactDatabaseUrl,
 } from "./env";
-import { createPostgresBaseBuddyConfigStore } from "./postgres-app-state-store";
+import { createPostgresBaseBuddyConfigStore, getPostgresBaseBuddyAppStateWriteAccess } from "./postgres-app-state-store";
 import {
   baseBuddyConfigSchema,
   createDefaultBaseBuddyConfig,
@@ -182,16 +183,30 @@ const writeValidatedBaseBuddyConfig = async (config: BaseBuddyConfig) => {
   return validatedConfig;
 };
 
+const withLocalConfigLock = async <T>(work: () => Promise<T>): Promise<T> => {
+  const release = await lockfile.lock(getBaseBuddyConfigPath(), {
+    realpath: false,
+    stale: 30_000,
+    update: 10_000,
+    retries: { retries: 40, minTimeout: 25, maxTimeout: 250, randomize: true },
+  });
+  try {
+    return await work();
+  } finally {
+    await release();
+  }
+};
+
 const writeLocalBaseBuddyConfig = async (
   updater: (config: BaseBuddyConfig) => BaseBuddyConfig | Promise<BaseBuddyConfig>,
 ): Promise<BaseBuddyConfig> => {
   const operation = pendingConfigWrite
     .catch(() => undefined)
-    .then(async () => {
+    .then(() => withLocalConfigLock(async () => {
       const currentConfig = await loadBaseBuddyConfig();
       const nextConfig = await updater(currentConfig);
       return writeValidatedBaseBuddyConfig(nextConfig);
-    });
+    }));
 
   pendingConfigWrite = operation.then(
     () => undefined,
@@ -220,7 +235,7 @@ export const ensureBaseBuddyConfig = async (
 
   const operation = pendingConfigWrite
     .catch(() => undefined)
-    .then(async () => {
+    .then(() => withLocalConfigLock(async () => {
       const existingConfig = await loadOptionalBaseBuddyConfig();
 
       if (existingConfig) {
@@ -228,7 +243,7 @@ export const ensureBaseBuddyConfig = async (
       }
 
       return writeValidatedBaseBuddyConfig(createDefaultBaseBuddyConfig(seed));
-    });
+    }));
 
   pendingConfigWrite = operation.then(
     () => undefined,
@@ -278,6 +293,7 @@ export const getRedactedBaseBuddyConfigStatus =
 
       try {
         const config = await getPostgresAppStateConfigStore().loadOptional();
+        const writable = await getPostgresBaseBuddyAppStateWriteAccess(getPostgresAppStateQueryClient());
 
         return {
           config: {
@@ -286,7 +302,7 @@ export const getRedactedBaseBuddyConfigStatus =
             path: `${statusPath} (${redactDatabaseUrl(databaseUrl)})`,
             readable: true,
             valid: Boolean(config),
-            writable: true,
+            writable,
           },
           redactedConfig: config ? redactBaseBuddyConfig(config) : null,
         };

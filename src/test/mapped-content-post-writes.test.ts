@@ -87,6 +87,17 @@ describe("existing db runtime post writes", () => {
     applyMappedRelationWriteMock.mockResolvedValue(undefined);
   });
 
+  it("locks the post before reading the values used to construct a patch", async () => {
+    const mapping = createMapping();
+    const client = { query: vi.fn().mockResolvedValue({ rows: [] }) };
+    getMappedContentPostByIdMock.mockImplementationOnce(async () => {
+      expect(client.query.mock.calls.some(([sql]) => /for update/i.test(sql))).toBe(true);
+      throw new Error("snapshot read after row lock");
+    });
+    await expect(updateMappedContentPost({ client: client as never, mapping, postId: "post-1", title: "Changed" })).rejects.toThrow("snapshot read after row lock");
+    expect(client.query).toHaveBeenLastCalledWith("rollback");
+  });
+
   it("creates JSON-path-backed explicit fields without overwriting sibling values in the same JSON column", async () => {
     const mapping = createMapping();
 
@@ -145,6 +156,7 @@ describe("existing db runtime post writes", () => {
       updatedAt: "2026-03-30T00:00:00.000Z",
     };
     const queryMock = vi.fn(async (sql: string) => {
+      if (/^(begin|commit|rollback)$/i.test(sql) || /for update$/i.test(sql)) return { rows: [] };
         if (sql.includes("information_schema.columns")) {
           return {
             rows: [
@@ -431,6 +443,7 @@ describe("existing db runtime post writes", () => {
       updatedAt: "2026-03-30T00:00:00.000Z",
     };
     const queryMock = vi.fn(async (sql: string) => {
+      if (/^(begin|commit|rollback)$/i.test(sql) || /for update$/i.test(sql)) return { rows: [] };
         if (sql === "begin" || sql === "commit" || sql === "rollback") {
           return {
             rows: [],
@@ -601,6 +614,7 @@ describe("existing db runtime post writes", () => {
       updatedAt: "2026-03-30T00:00:00.000Z",
     };
     const queryMock = vi.fn(async (sql: string) => {
+      if (/^(begin|commit|rollback)$/i.test(sql) || /for update$/i.test(sql)) return { rows: [] };
         if (sql === "begin" || sql === "commit" || sql === "rollback") {
           return {
             rows: [],
@@ -723,7 +737,7 @@ describe("existing db runtime post writes", () => {
       postId: "post-1",
     });
 
-    expect(client.query).toHaveBeenCalledTimes(1);
+    expect(client.query).toHaveBeenCalledTimes(4);
     expect(client.query).toHaveBeenCalledWith(
       expect.stringContaining('"body_html" = $'),
       expect.arrayContaining(["post-1", "<p>Updated body</p>"]),
@@ -780,6 +794,9 @@ describe("existing db runtime post writes", () => {
     const client = {
       query: vi
         .fn()
+        .mockResolvedValue({ rows: [] })
+        .mockResolvedValueOnce({ rows: [] })
+        .mockResolvedValueOnce({ rows: [] })
         .mockResolvedValueOnce({
           rows: [
             {
@@ -803,10 +820,10 @@ describe("existing db runtime post writes", () => {
       title: "New title",
     });
 
-    expect(client.query).toHaveBeenCalledTimes(2);
-    expect(client.query.mock.calls[0]?.[0]).toContain(`select "title_parts"`);
-    expect(client.query.mock.calls[0]?.[1]).toEqual(["post-1"]);
-    expect(client.query.mock.calls[1]?.[1]).toEqual(
+    expect(client.query).toHaveBeenCalledTimes(5);
+    expect(client.query.mock.calls[2]?.[0]).toContain(`select "title_parts"`);
+    expect(client.query.mock.calls[2]?.[1]).toEqual(["post-1"]);
+    expect(client.query.mock.calls[3]?.[1]).toEqual(
       expect.arrayContaining([
         "post-1",
         ["keep-me", "New title", "tail"],
@@ -890,6 +907,9 @@ describe("existing db runtime post writes", () => {
     const client = {
       query: vi
         .fn()
+        .mockResolvedValue({ rows: [] })
+        .mockResolvedValueOnce({ rows: [] })
+        .mockResolvedValueOnce({ rows: [] })
         .mockResolvedValueOnce({
           rows: [
             {
@@ -933,9 +953,9 @@ describe("existing db runtime post writes", () => {
       postId: "post-1",
     });
 
-    expect(client.query).toHaveBeenCalledTimes(2);
-    expect(client.query.mock.calls[0]?.[0]).toContain(`select "content_payload", "body_blocks"`);
-    expect(client.query.mock.calls[1]?.[1]).toEqual(
+    expect(client.query).toHaveBeenCalledTimes(5);
+    expect(client.query.mock.calls[2]?.[0]).toContain(`select "content_payload", "body_blocks"`);
+    expect(client.query.mock.calls[3]?.[1]).toEqual(
       expect.arrayContaining([
         "post-1",
         {
@@ -1020,7 +1040,7 @@ describe("existing db runtime post writes", () => {
       postId: "post-1",
     });
 
-    expect(client.query).toHaveBeenCalledTimes(1);
+    expect(client.query).toHaveBeenCalledTimes(4);
     expect(client.query).toHaveBeenCalledWith(
       expect.stringContaining('"body_html" = $'),
       expect.arrayContaining(["post-1", "<p>Updated body</p>"]),
@@ -1117,11 +1137,11 @@ describe("existing db runtime post writes", () => {
 
     expect(client.query).toHaveBeenNthCalledWith(1, "begin");
     expect(client.query).toHaveBeenNthCalledWith(
-      2,
+      3,
       expect.stringContaining("update"),
       expect.arrayContaining(["post-1"]),
     );
-    expect(client.query).toHaveBeenNthCalledWith(3, "commit");
+    expect(client.query).toHaveBeenLastCalledWith("commit");
     expect(applyMappedRelationWriteMock).toHaveBeenNthCalledWith(
       1,
       expect.objectContaining({
@@ -1206,9 +1226,9 @@ describe("existing db runtime post writes", () => {
       postId: "post-1",
     });
 
-    expect(client.query).toHaveBeenCalledTimes(1);
-    expect(client.query.mock.calls[0]?.[0]).toContain('"parent_post_id" = $');
-    expect(client.query.mock.calls[0]?.[1]).toEqual(
+    expect(client.query).toHaveBeenCalledTimes(4);
+    expect(client.query.mock.calls[2]?.[0]).toContain('"parent_post_id" = $');
+    expect(client.query.mock.calls[2]?.[1]).toEqual(
       expect.arrayContaining(["post-1", "post-parent"]),
     );
   });
@@ -1377,9 +1397,9 @@ describe("existing db runtime post writes", () => {
       postId: "post-1",
     });
 
-    expect(client.query).toHaveBeenCalledTimes(1);
-    expect(client.query.mock.calls[0]?.[0]).toContain('"category_id" = $');
-    expect(client.query.mock.calls[0]?.[1]).toEqual(
+    expect(client.query).toHaveBeenCalledTimes(4);
+    expect(client.query.mock.calls[2]?.[0]).toContain('"category_id" = $');
+    expect(client.query.mock.calls[2]?.[1]).toEqual(
       expect.arrayContaining(["post-1", "category-1"]),
     );
     expect(applyMappedRelationWriteMock).not.toHaveBeenCalled();
@@ -1613,10 +1633,10 @@ describe("existing db runtime post writes", () => {
     });
 
     expect(client.query).toHaveBeenNthCalledWith(1, "begin");
-    expect(client.query.mock.calls[1]?.[0]).toContain('"sponsor_author_id" = $');
-    expect(client.query.mock.calls[1]?.[0]).toContain('"hero_media_id" = $');
-    expect(client.query.mock.calls[1]?.[0]).toContain('"attachment_file_id" = $');
-    expect(client.query.mock.calls[1]?.[1]).toEqual(
+    expect(client.query.mock.calls[2]?.[0]).toContain('"sponsor_author_id" = $');
+    expect(client.query.mock.calls[2]?.[0]).toContain('"hero_media_id" = $');
+    expect(client.query.mock.calls[2]?.[0]).toContain('"attachment_file_id" = $');
+    expect(client.query.mock.calls[2]?.[1]).toEqual(
       expect.arrayContaining(["post-1", "author-2", "media-2", "file-2"]),
     );
     expect(applyMappedRelationWriteMock).toHaveBeenCalledWith(
@@ -1844,7 +1864,7 @@ describe("existing db runtime post writes", () => {
 
     expect(client.query).toHaveBeenNthCalledWith(1, "begin");
     expect(client.query).toHaveBeenNthCalledWith(
-      2,
+      3,
       expect.stringContaining("update"),
       expect.arrayContaining([
         "post-1",
@@ -1862,7 +1882,7 @@ describe("existing db runtime post writes", () => {
         "post-parent",
       ]),
     );
-    expect(client.query).toHaveBeenNthCalledWith(3, "commit");
+    expect(client.query).toHaveBeenLastCalledWith("commit");
     expect(applyMappedRelationWriteMock).toHaveBeenNthCalledWith(
       1,
       expect.objectContaining({
@@ -1949,11 +1969,11 @@ describe("existing db runtime post writes", () => {
 
     expect(client.query).toHaveBeenNthCalledWith(1, "begin");
     expect(client.query).toHaveBeenNthCalledWith(
-      2,
+      3,
       expect.stringContaining("update"),
       expect.arrayContaining(["post-1"]),
     );
-    expect(client.query).toHaveBeenNthCalledWith(3, "rollback");
+    expect(client.query).toHaveBeenLastCalledWith("rollback");
     expect(getMappedContentPostByIdMock).toHaveBeenCalledTimes(1);
   });
 
@@ -2016,7 +2036,7 @@ describe("existing db runtime post writes", () => {
       message: "This post has changed since you loaded it. Reload and try again.",
     });
 
-    expect(client.query).not.toHaveBeenCalled();
+    expect(client.query.mock.calls.some(([sql]) => /^(update|insert|delete)\b/i.test(sql.trim()))).toBe(false);
   });
 
   it("accepts optimistic updatedAt tokens when the stored timestamp only differs by Postgres microseconds", async () => {
@@ -2124,6 +2144,7 @@ describe("existing db runtime post writes", () => {
       updatedAt: "2026-03-30T00:00:00.000Z",
     };
     const queryMock = vi.fn(async (sql: string) => {
+      if (/^(begin|commit|rollback)$/i.test(sql) || /for update$/i.test(sql)) return { rows: [] };
       if (sql.includes('select') && sql.includes('from "public"."posts"') && sql.includes('limit 1')) {
         return {
           rows: [
@@ -2319,6 +2340,7 @@ describe("existing db runtime post writes", () => {
       updatedAt: "2026-03-31T00:00:00.000Z",
     };
     const queryMock = vi.fn(async (sql: string) => {
+      if (/^(begin|commit|rollback)$/i.test(sql) || /for update$/i.test(sql)) return { rows: [] };
         if (sql === "begin" || sql === "commit" || sql === "rollback") {
           return {
             rows: [],
@@ -2512,6 +2534,7 @@ describe("existing db runtime post writes", () => {
       seoTitle: "Fresh helper title",
     };
     const queryMock = vi.fn(async (sql: string) => {
+      if (/^(begin|commit|rollback)$/i.test(sql) || /for update$/i.test(sql)) return { rows: [] };
       if (sql === "begin" || sql === "commit" || sql === "rollback") {
         return {
           rows: [],
@@ -2636,6 +2659,7 @@ describe("existing db runtime post writes", () => {
     ];
 
     const queryMock = vi.fn(async (sql: string) => {
+      if (/^(begin|commit|rollback)$/i.test(sql) || /for update$/i.test(sql)) return { rows: [] };
         if (sql === "begin" || sql === "commit" || sql === "rollback") {
           return {
             rows: [],
@@ -2730,6 +2754,9 @@ describe("existing db runtime post writes", () => {
     const client = {
       query: vi
         .fn()
+        .mockResolvedValue({ rows: [] })
+        .mockResolvedValueOnce({ rows: [] })
+        .mockResolvedValueOnce({ rows: [] })
         .mockResolvedValueOnce({
           rows: [
             {
@@ -2806,10 +2833,10 @@ describe("existing db runtime post writes", () => {
       title: "Updated title",
     });
 
-    expect(client.query).toHaveBeenCalledTimes(2);
-    expect(client.query.mock.calls[0]?.[0]).toContain('select "meta_payload", "route_payload"');
-    expect(client.query.mock.calls[1]?.[0]).toContain("update");
-    expect(client.query.mock.calls[1]?.[1]).toEqual(
+    expect(client.query).toHaveBeenCalledTimes(5);
+    expect(client.query.mock.calls[2]?.[0]).toContain('select "meta_payload", "route_payload"');
+    expect(client.query.mock.calls[3]?.[0]).toContain("update");
+    expect(client.query.mock.calls[3]?.[1]).toEqual(
       expect.arrayContaining([
         "post-1",
         expect.objectContaining({
@@ -2885,6 +2912,9 @@ describe("existing db runtime post writes", () => {
     const client = {
       query: vi
         .fn()
+        .mockResolvedValue({ rows: [] })
+        .mockResolvedValueOnce({ rows: [] })
+        .mockResolvedValueOnce({ rows: [] })
         .mockResolvedValueOnce({
           rows: [
             {
@@ -2945,9 +2975,9 @@ describe("existing db runtime post writes", () => {
       title: "New JSON title",
     });
 
-    expect(client.query).toHaveBeenCalledTimes(2);
-    expect(client.query.mock.calls[1]?.[0]).toContain("update");
-    expect(client.query.mock.calls[1]?.[1]).toEqual([
+    expect(client.query).toHaveBeenCalledTimes(5);
+    expect(client.query.mock.calls[3]?.[0]).toContain("update");
+    expect(client.query.mock.calls[3]?.[1]).toEqual([
       "post-1",
       {
         ...existingPayload,
@@ -2993,6 +3023,9 @@ describe("existing db runtime post writes", () => {
     const client = {
       query: vi
         .fn()
+        .mockResolvedValue({ rows: [] })
+        .mockResolvedValueOnce({ rows: [] })
+        .mockResolvedValueOnce({ rows: [] })
         .mockResolvedValueOnce({
           rows: [
             {
@@ -3026,9 +3059,9 @@ describe("existing db runtime post writes", () => {
       redirects: [" old-post ", "older-post", "old-post", ""],
     });
 
-    expect(client.query).toHaveBeenCalledTimes(1);
-    expect(client.query.mock.calls[0]?.[0]).toContain('set "redirect_history" = $2');
-    expect(client.query.mock.calls[0]?.[1]).toEqual(
+    expect(client.query).toHaveBeenCalledTimes(4);
+    expect(client.query.mock.calls[2]?.[0]).toContain('set "redirect_history" = $2');
+    expect(client.query.mock.calls[2]?.[1]).toEqual(
       expect.arrayContaining(["post-1", '["old-post","older-post"]']),
     );
   });
@@ -3077,6 +3110,9 @@ describe("existing db runtime post writes", () => {
     const client = {
       query: vi
         .fn()
+        .mockResolvedValue({ rows: [] })
+        .mockResolvedValueOnce({ rows: [] })
+        .mockResolvedValueOnce({ rows: [] })
         .mockResolvedValueOnce({
           rows: [
             {
@@ -3117,8 +3153,8 @@ describe("existing db runtime post writes", () => {
       ],
     });
 
-    expect(client.query).toHaveBeenCalledTimes(1);
-    expect(client.query.mock.calls[0]?.[1]).toEqual(
+    expect(client.query).toHaveBeenCalledTimes(4);
+    expect(client.query.mock.calls[2]?.[1]).toEqual(
       expect.arrayContaining([
         "post-1",
         '[{"source":"old-post","statusCode":301,"active":true,"locale":"en"}]',
@@ -3162,7 +3198,7 @@ describe("existing db runtime post writes", () => {
       slug: "new-post",
     };
     const client = {
-      query: vi.fn().mockResolvedValueOnce({
+      query: vi.fn().mockResolvedValue({ rows: [] }).mockResolvedValueOnce({ rows: [] }).mockResolvedValueOnce({ rows: [] }).mockResolvedValueOnce({
         rows: [],
       }),
     };
@@ -3192,7 +3228,7 @@ describe("existing db runtime post writes", () => {
       slug: "new-post",
     });
 
-    expect(client.query).toHaveBeenCalledTimes(1);
+    expect(client.query).toHaveBeenCalledTimes(4);
     const updateCall = client.query.mock.calls.find(([sql]) =>
       (sql as string).includes('update "public"."posts"'),
     );
@@ -3239,7 +3275,7 @@ describe("existing db runtime post writes", () => {
       slug: "new-post",
     };
     const client = {
-      query: vi.fn().mockResolvedValueOnce({
+      query: vi.fn().mockResolvedValue({ rows: [] }).mockResolvedValueOnce({ rows: [] }).mockResolvedValueOnce({ rows: [] }).mockResolvedValueOnce({
         rows: [],
       }),
     };
@@ -3270,7 +3306,7 @@ describe("existing db runtime post writes", () => {
       slug: "new-post",
     });
 
-    expect(client.query).toHaveBeenCalledTimes(1);
+    expect(client.query).toHaveBeenCalledTimes(4);
     const updateCall = client.query.mock.calls.find(([sql]) =>
       (sql as string).includes('update "public"."posts"'),
     );
@@ -3429,6 +3465,7 @@ describe("existing db runtime post writes", () => {
       },
     };
     const queryMock = vi.fn(async (sql: string) => {
+      if (/^(begin|commit|rollback)$/i.test(sql) || /for update$/i.test(sql)) return { rows: [] };
         if (sql.includes('select "subtitle_lookup_id"')) {
           return {
             rows: [

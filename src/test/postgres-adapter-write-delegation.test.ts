@@ -111,6 +111,11 @@ const createMappedProjectMapping = ({
   });
 
 describe("Postgres runtime adapter write delegation", () => {
+  it("keeps the original conflict timestamp separate from an editable timestamp", async () => {
+    const adapter = createContentRuntimeAdapter({ hasFilesS3CompatibleCredentials: false, hasS3CompatibleCredentials: false, mapping: createMappedProjectMapping() });
+    await adapter.savePost({ client: {} as never, postId: "post-1", expectedUpdatedAt: "2026-04-01T00:00:00.000Z", updatedAt: "2026-04-02T00:00:00.000Z", title: "Changed" });
+    expect(updateMappedContentPostMock).toHaveBeenCalledWith(expect.objectContaining({ expectedUpdatedAt: "2026-04-01T00:00:00.000Z", updatedAt: "2026-04-02T00:00:00.000Z" }));
+  });
   beforeEach(() => {
     vi.clearAllMocks();
   });

@@ -98,6 +98,8 @@ export type ContentActionPayload =
       slug?: string;
       tagIds?: string[];
       title?: string;
+      expectedUpdatedAt?: string | null;
+      expectedVersion?: string;
       updatedAt?: string | null;
     }
   | {
@@ -122,6 +124,8 @@ export type ContentActionPayload =
       status?: ContentPostStatus;
       tagIds?: string[];
       title?: string;
+      expectedUpdatedAt?: string | null;
+      expectedVersion?: string;
       updatedAt?: string | null;
     }
   | {
@@ -144,6 +148,8 @@ export type ContentActionPayload =
       slug?: string;
       tagIds?: string[];
       title?: string;
+      expectedUpdatedAt?: string | null;
+      expectedVersion?: string;
       updatedAt?: string | null;
     }
   | {
@@ -173,6 +179,8 @@ export type ContentActionPayload =
       status?: ContentPostStatus;
       tagIds?: string[];
       title?: string;
+      expectedUpdatedAt?: string | null;
+      expectedVersion?: string;
       updatedAt?: string | null;
     };
 
@@ -237,6 +245,8 @@ const contentPostMutationFields = {
   status: z.enum(CONTENT_POST_STATUS_VALUES).optional(),
   tagIds: contentIdArraySchema,
   title: contentOptionalStringSchema,
+  expectedUpdatedAt: contentOptionalNullableDateTimeSchema,
+  expectedVersion: z.string().regex(/^[a-f0-9]{64}$/).optional(),
   updatedAt: contentOptionalNullableDateTimeSchema,
 } satisfies Record<string, z.ZodTypeAny>;
 

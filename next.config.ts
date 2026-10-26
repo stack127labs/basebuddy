@@ -12,7 +12,7 @@ const securityHeaders = getSecurityHeaders({
 });
 
 const nextConfig: NextConfig = {
-  env: {},
+  env: { BASEBUDDY_TEST_BUILD: process.env.BASEBUDDY_TEST_BUILD === "1" ? "1" : "0" },
   experimental: {
     webpackBuildWorker: false,
   },

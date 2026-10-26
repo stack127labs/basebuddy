@@ -78,6 +78,12 @@ BASEBUDDY_S3_ACCESS_KEY_ID=
 BASEBUDDY_S3_SECRET_ACCESS_KEY=
 ```
 
+## Browser setup authorization
+
+Set `BASEBUDDY_SETUP_TOKEN` to at least 32 random characters before creating the first owner in the browser. Enter the same value in the **Setup token** field. The token stays in environment variables and is never saved in app data. CLI owner creation does not require it. You can remove the token after setup.
+
+Normal runtime accounts need `USAGE` on the `basebuddy` schema, `SELECT`, `INSERT`, and `UPDATE` on `basebuddy.app_state`, and `INSERT` on `basebuddy.audit_events`. Run migrations separately with an administrator. Normal reads and writes never create tables.
+
 ## Public Env
 
 Optional public env values:

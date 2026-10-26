@@ -2869,7 +2869,8 @@ export function ProjectEditor({
       action: {
         action,
         postId: post.id,
-        updatedAt: post.updatedAt,
+        expectedUpdatedAt: (persistedPostsRef.current[post.id] ?? post).updatedAt,
+        expectedVersion: (persistedPostsRef.current[post.id] ?? post).versionToken,
         ...savePayloadFields,
       },
       projectId,

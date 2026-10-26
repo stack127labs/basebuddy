@@ -91,6 +91,7 @@ describe("OnboardingSetupView", () => {
     continueToDatabaseStep();
     fireEvent.click(screen.getByLabelText(/i added the env values/i));
     fireEvent.click(screen.getByRole("button", { name: /continue/i }));
+    fireEvent.change(screen.getByLabelText(/^setup token/i), { target: { value: "test-setup-token-at-least-32-characters" } });
   };
 
   it("starts by choosing where to store BaseBuddy data", () => {
@@ -285,6 +286,7 @@ describe("OnboardingSetupView", () => {
       ownerEmail: "owner@example.com",
       ownerName: "Owner User",
       ownerPassword: "OwnerPass1!",
+      setupToken: "test-setup-token-at-least-32-characters",
     });
     expect(JSON.stringify(requestBody)).not.toContain("postgresql://");
     expect(JSON.stringify(requestBody)).not.toContain("secret-content-key");

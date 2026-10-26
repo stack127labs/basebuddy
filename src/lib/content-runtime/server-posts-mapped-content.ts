@@ -126,6 +126,8 @@ type MappedContentPostMutationInput = {
   status?: ContentPost["status"];
   tagIds?: string[];
   title?: string;
+  expectedUpdatedAt?: string | null;
+  expectedVersion?: string;
   updatedAt?: string | null;
 };
 
@@ -773,6 +775,8 @@ export const updateMappedContentPost = async ({
   status,
   tagIds,
   title,
+  expectedUpdatedAt,
+  expectedVersion,
   updatedAt,
   saveMode = "save",
 }: MappedContentPostMutationInput & {
@@ -867,6 +871,8 @@ export const updateMappedContentPost = async ({
       status: resolvedRequestedStatus,
       tagIds,
       title,
+      expectedUpdatedAt,
+      expectedVersion,
       updatedAt,
     };
     const updatedPost =

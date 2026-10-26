@@ -37,6 +37,8 @@ basebuddy.audit.*.jsonl
 .vercel
 *.pem
 *.tsbuildinfo
+*.tar.gz
+*.dump
 next-env.d.ts
 
 .vscode/*

@@ -653,8 +653,9 @@ describe("project editor save failures", () => {
       action: "update_post",
       postId: "post-1",
       title: "Hello Again",
-      updatedAt: "2026-04-08T01:00:00.000Z",
+      expectedUpdatedAt: "2026-04-08T01:00:00.000Z",
     });
+    expect(body).not.toHaveProperty("updatedAt");
     expect(body).not.toHaveProperty("authorId");
     expect(body).not.toHaveProperty("categoryIds");
     expect(body).not.toHaveProperty("contentFields");
@@ -882,7 +883,7 @@ describe("project editor save failures", () => {
         expect(body).toEqual({
           action,
           postId: "post-1",
-          updatedAt: "2026-04-08T01:00:00.000Z",
+          expectedUpdatedAt: "2026-04-08T01:00:00.000Z",
         });
       } finally {
         mutableEditorPost.status = previousStatus;

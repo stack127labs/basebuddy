@@ -79,6 +79,10 @@ BaseBuddy separates three ideas:
 
 By default, `basebuddy-data/basebuddy.config.json` stores BaseBuddy users, sessions, projects, members, permissions, invitations, saved mappings, and sidebar layout. You can also store the same BaseBuddy app data in Supabase/Postgres with `BASEBUDDY_APP_STATE_BACKEND=supabase-same-project` or `supabase-split-project`. Database URLs, service keys, signing secrets, and storage access keys stay in `.env` or deployment environment variables.
 
+## Docker installation
+
+Use the included `Dockerfile` and `compose.yaml` to run BaseBuddy as a non-root user with persistent app data. Follow [Deployment](./docs/deployment.md) to configure environment values, authorize first-owner setup, and enable HTTPS.
+
 ## Quick Start
 
 You need:
@@ -101,6 +105,8 @@ Open:
 ```text
 http://localhost:8080/onboarding
 ```
+
+Before browser setup, set `BASEBUDDY_SETUP_TOKEN` to at least 32 random characters in your server environment. Enter the same value on the account step. CLI owner creation does not require the token.
 
 Finish onboarding: choose where BaseBuddy stores app data, connect your database with env values from `.env.example`, prepare app-data tables if you chose Supabase/Postgres app data, create the owner account, and let setup checks run. BaseBuddy creates the selected app-data backend, then you sign in and create your first project.
 

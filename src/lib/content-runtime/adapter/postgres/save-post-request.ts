@@ -94,13 +94,15 @@ export const sanitizeAdapterSavePostRequest = ({
     mapping,
     request,
   });
-  const expectedUpdatedAt =
+  const expectedUpdatedAt = request.expectedUpdatedAt ?? (
     updatedAtInstruction && !isWritableEditabilityState(updatedAtInstruction.editabilityState)
       ? request.updatedAt
-      : undefined;
+      : undefined
+  );
 
   return {
     client: request.client,
+    expectedVersion: request.expectedVersion,
     authorId: sanitizeAdapterSingleRelationValue({
       editabilityState: authorInstruction?.editabilityState,
       label: "Author",

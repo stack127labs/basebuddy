@@ -32,7 +32,14 @@ export type PostgresBaseBuddyAuditEvent = {
   type: string;
 };
 
-let pendingPostgresConfigWrite: Promise<void> = Promise.resolve();
+const APP_STATE_WRITE_ATTEMPTS = 8;
+
+const explainAppStateError = (error: unknown): never => {
+  if (error && typeof error === "object" && "code" in error && (error.code === "42P01" || error.code === "3F000")) {
+    throw new Error("BaseBuddy app-data tables are missing. Run pnpm basebuddy app-data:migrate with a migration role, or apply pnpm basebuddy app-data:sql, then run app-data:check.", { cause: error });
+  }
+  throw error;
+};
 
 const createInvalidConfigError = (error: unknown) => {
   if (error && typeof error === "object" && "issues" in error) {
@@ -84,36 +91,48 @@ export const ensurePostgresBaseBuddyAppStateSchema = async (
   await client.query(BASEBUDDY_POSTGRES_APP_STATE_SETUP_SQL);
 };
 
+export const getPostgresBaseBuddyAppStateWriteAccess = async (
+  client: PostgresBaseBuddyConfigQueryClient,
+) => {
+  const result = await client.query<{ writable: boolean }>(`
+    select has_schema_privilege(current_user, 'basebuddy', 'USAGE')
+      and has_table_privilege(current_user, 'basebuddy.app_state', 'SELECT')
+      and has_table_privilege(current_user, 'basebuddy.app_state', 'INSERT')
+      and has_table_privilege(current_user, 'basebuddy.app_state', 'UPDATE')
+      and has_table_privilege(current_user, 'basebuddy.audit_events', 'INSERT') as writable
+  `).catch(explainAppStateError);
+  return result.rows[0]?.writable === true;
+};
+
 export const appendPostgresBaseBuddyAuditEvent = async <
   TEvent extends PostgresBaseBuddyAuditEvent,
 >(
   client: PostgresBaseBuddyConfigQueryClient,
   event: TEvent,
 ) => {
-  await ensurePostgresBaseBuddyAppStateSchema(client);
-  const result = await client.query<{ event: unknown }>(
+  await client.query(
     `insert into basebuddy.audit_events (id, event)
-     values ($1, $2)
-     returning event`,
+     values ($1, $2)`,
     [event.id, event],
-  );
+  ).catch(explainAppStateError);
 
-  return (result.rows[0]?.event ?? event) as TEvent;
+  return event;
 };
 
 export const createPostgresBaseBuddyConfigStore = (
   client: PostgresBaseBuddyConfigQueryClient,
 ): PostgresBaseBuddyConfigStore => {
-  const loadOptional = async () => {
-    await ensurePostgresBaseBuddyAppStateSchema(client);
+  const loadSnapshot = async () => {
     const result = await client.query<{ config: unknown }>(
       "select config from basebuddy.app_state where id = $1",
       [BASEBUDDY_APP_STATE_CONFIG_ID],
-    );
+    ).catch(explainAppStateError);
     const row = result.rows[0];
 
-    return row ? validateBaseBuddyConfig(row.config) : null;
+    return row ? { config: validateBaseBuddyConfig(row.config), expectedConfig: JSON.stringify(row.config) } : null;
   };
+
+  const loadOptional = async () => (await loadSnapshot())?.config ?? null;
 
   const load = async () => {
     const config = await loadOptional();
@@ -140,62 +159,35 @@ export const createPostgresBaseBuddyConfigStore = (
       : await load();
   };
 
-  const update = async (config: BaseBuddyConfig) => {
+  const update = async (config: BaseBuddyConfig, expectedConfig: string) => {
     const validatedConfig = validateBaseBuddyConfig(config);
     const result = await client.query<{ config: unknown }>(
       `update basebuddy.app_state
        set config = $2, updated_at = timezone('utc', now())
-       where id = $1
+       where id = $1 and config = $3::jsonb
        returning config`,
-      [BASEBUDDY_APP_STATE_CONFIG_ID, validatedConfig],
-    );
+      [BASEBUDDY_APP_STATE_CONFIG_ID, validatedConfig, expectedConfig],
+    ).catch(explainAppStateError);
 
-    if (!result.rows[0]) {
-      throw new Error("BaseBuddy app-state config does not exist.");
-    }
-
-    return validateBaseBuddyConfig(result.rows[0].config);
+    return result.rows[0] ? validateBaseBuddyConfig(result.rows[0].config) : null;
   };
 
   const ensure = async (seed: CreateDefaultBaseBuddyConfigInput) => {
-    const operation = pendingPostgresConfigWrite
-      .catch(() => undefined)
-      .then(async () => {
-        const existingConfig = await loadOptional();
-
-        if (existingConfig) {
-          return existingConfig;
-        }
-
-        return insert(createDefaultBaseBuddyConfig(seed));
-      });
-
-    pendingPostgresConfigWrite = operation.then(
-      () => undefined,
-      () => undefined,
-    );
-
-    return operation;
+    return (await loadOptional()) ?? insert(createDefaultBaseBuddyConfig(seed));
   };
 
   const write = async (
     updater: (config: BaseBuddyConfig) => BaseBuddyConfig | Promise<BaseBuddyConfig>,
   ) => {
-    const operation = pendingPostgresConfigWrite
-      .catch(() => undefined)
-      .then(async () => {
-        const currentConfig = await load();
-        const nextConfig = await updater(currentConfig);
-
-        return update(nextConfig);
-      });
-
-    pendingPostgresConfigWrite = operation.then(
-      () => undefined,
-      () => undefined,
-    );
-
-    return operation;
+    for (let attempt = 0; attempt < APP_STATE_WRITE_ATTEMPTS; attempt += 1) {
+      const snapshot = await loadSnapshot();
+      if (!snapshot) throw new Error("BaseBuddy app-state config does not exist.");
+      // Retry the updater with fresh state when another process wins the write.
+      const updated = await update(await updater(snapshot.config), snapshot.expectedConfig);
+      if (updated) return updated;
+      await new Promise((resolve) => setTimeout(resolve, 10 * (attempt + 1)));
+    }
+    throw new Error("BaseBuddy app data changed repeatedly while saving. Retry this action.");
   };
 
   return {
