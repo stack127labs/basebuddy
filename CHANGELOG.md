@@ -1,6 +1,27 @@
 # Changelog
 
-## 0.2.1
+All notable public changes to BaseBuddy will be documented here.
+
+This project follows a practical changelog format. Dates use `YYYY-MM-DD`.
+
+## Unreleased
+
+No unreleased changes yet.
+
+## 0.2.2 - Published Docker Image - 2026-11-02
+
+### Added
+
+- Ready-made multi-platform image (`linux/amd64`, `linux/arm64`) at `ghcr.io/stack127labs/basebuddy`, published from release tags.
+- `compose.build.yaml` for building the image from source.
+
+### Changed
+
+- `compose.yaml` now pulls the published image instead of building locally.
+- Branding and indexing settings are read at runtime. New names `BASEBUDDY_APP_NAME`, `BASEBUDDY_DOCS_URL`, `BASEBUDDY_SUPPORT_URL`, and `BASEBUDDY_SITE_INDEXABLE` are preferred; the older `NEXT_PUBLIC_*` names still work.
+- The Docker image no longer ships the Next.js build cache, which makes it about 640 MB smaller.
+
+## 0.2.1 - Safe Writes And Docker Deployment - 2026-10-26
 
 - Patch production dependencies and update the lockfile.
 - Require server authorization for browser creation of the first owner.
@@ -11,14 +32,6 @@
 - Compile test sign-in out of normal production builds.
 - Add Postgres concurrency and restricted-role regressions, plus Docker restart and backup/restore checks.
 
-
-All notable public changes to BaseBuddy will be documented here.
-
-This project follows a practical changelog format. Dates use `YYYY-MM-DD`.
-
-## Unreleased
-
-No unreleased changes yet.
 
 ## 0.2.0 - App Data Backend Setup Flow - 2026-05-31
 

@@ -1,4 +1,11 @@
-export const isSearchIndexingEnabled = (rawValue = process.env.NEXT_PUBLIC_SITE_INDEXABLE) => {
+// Read at request time so one published Docker image can be configured by env.
+// Bracket access keeps Next.js from inlining the legacy NEXT_PUBLIC_* value at build time.
+const readSiteIndexableEnv = (env: Record<string, string | undefined> = process.env) => {
+  const value = env["BASEBUDDY_SITE_INDEXABLE"];
+  return value?.trim() ? value : env["NEXT_PUBLIC_SITE_INDEXABLE"];
+};
+
+export const isSearchIndexingEnabled = (rawValue = readSiteIndexableEnv()) => {
   const normalizedValue = rawValue?.trim().toLowerCase();
   return normalizedValue === "true" || normalizedValue === "1" || normalizedValue === "yes";
 };

@@ -63,4 +63,30 @@ describe("account menu", () => {
       expect(refreshMock).toHaveBeenCalled();
     });
   });
+
+  it("uses docs and support links from the server-provided branding", async () => {
+    const { AccountMenu } = await import("@/components/account/account-menu");
+    const { BrandingProvider } = await import("@/components/branding-provider");
+
+    render(
+      <BrandingProvider
+        branding={{
+          appName: "Studio CMS",
+          docsUrl: "https://docs.example.com",
+          supportUrl: "https://support.example.com",
+        }}
+      >
+        <AccountMenu avatarUrl={null} email="owner@example.com" name="Owner User" />
+      </BrandingProvider>,
+    );
+
+    fireEvent.pointerDown(screen.getByRole("button", { name: /open account menu/i }), {
+      button: 0,
+      ctrlKey: false,
+    });
+
+    const links = (await screen.findAllByRole("menuitem")).map((item) => item.closest("a")?.getAttribute("href") ?? item.getAttribute("href"));
+    expect(links).toContain("https://docs.example.com");
+    expect(links).toContain("https://support.example.com");
+  });
 });

@@ -1,7 +1,9 @@
 services:
   basebuddy:
-    build: .
-    image: ${BASEBUDDY_IMAGE:-basebuddy:local}
+    # Published multi-platform image (linux/amd64 and linux/arm64).
+    # To build from source instead, add compose.build.yaml:
+    #   docker compose -f compose.yaml -f compose.build.yaml up -d --build
+    image: ${BASEBUDDY_IMAGE:-ghcr.io/stack127labs/basebuddy:0.2.2}
     init: true
     restart: unless-stopped
     env_file: .env

@@ -1,8 +1,10 @@
-type BrandingEnv = Partial<Record<
-  "NEXT_PUBLIC_BASEBUDDY_APP_NAME" | "NEXT_PUBLIC_BASEBUDDY_DOCS_URL" | "NEXT_PUBLIC_BASEBUDDY_SUPPORT_URL",
-  string
->> &
-  Record<string, string | undefined>;
+type BrandingEnv = Record<string, string | undefined>;
+
+export type BaseBuddyBranding = {
+  appName: string;
+  docsUrl: string;
+  supportUrl: string;
+};
 
 const normalizeText = (value: string | undefined, fallback: string) => {
   const normalized = value?.trim();
@@ -24,13 +26,21 @@ const normalizeHttpUrl = (value: string | undefined) => {
   }
 };
 
-const defaultDocsUrl = "https://basebuddy.stack127.com/docs";
-const defaultSupportUrl = "https://basebuddy.stack127.com/support";
+export const defaultBaseBuddyBranding: BaseBuddyBranding = {
+  appName: "BaseBuddy",
+  docsUrl: "https://basebuddy.stack127.com/docs",
+  supportUrl: "https://basebuddy.stack127.com/support",
+};
 
-export const getBaseBuddyBranding = (env: BrandingEnv = process.env) => ({
-  appName: normalizeText(env.NEXT_PUBLIC_BASEBUDDY_APP_NAME, "BaseBuddy"),
-  docsUrl: normalizeHttpUrl(env.NEXT_PUBLIC_BASEBUDDY_DOCS_URL) ?? defaultDocsUrl,
-  supportUrl: normalizeHttpUrl(env.NEXT_PUBLIC_BASEBUDDY_SUPPORT_URL) ?? defaultSupportUrl,
+// Read at request time on the server so one published Docker image can be
+// configured by env. The legacy NEXT_PUBLIC_* names are read the same way.
+const readRuntimeValue = (env: BrandingEnv, name: string) => {
+  const value = env[`BASEBUDDY_${name}`];
+  return value?.trim() ? value : env[`NEXT_PUBLIC_BASEBUDDY_${name}`];
+};
+
+export const getBaseBuddyBranding = (env: BrandingEnv = process.env): BaseBuddyBranding => ({
+  appName: normalizeText(readRuntimeValue(env, "APP_NAME"), defaultBaseBuddyBranding.appName),
+  docsUrl: normalizeHttpUrl(readRuntimeValue(env, "DOCS_URL")) ?? defaultBaseBuddyBranding.docsUrl,
+  supportUrl: normalizeHttpUrl(readRuntimeValue(env, "SUPPORT_URL")) ?? defaultBaseBuddyBranding.supportUrl,
 });
-
-export const baseBuddyBranding = getBaseBuddyBranding();

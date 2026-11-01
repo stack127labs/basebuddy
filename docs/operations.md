@@ -4,7 +4,7 @@ Back up BaseBuddy app data, environment secrets, and the content database separa
 
 ## Before an upgrade
 
-1. Record the current release commit and keep its Docker image under a rollback tag.
+1. Record the current image tag (for example `ghcr.io/stack127labs/basebuddy:0.2.2`). If you build from source, record the release commit and keep its image under a rollback tag.
 2. Stop scheduled writers and avoid configuration changes while taking the backup.
 3. Back up the app-data backend using the appropriate procedure below.
 4. Back up environment values through your secret manager. Keep the same auth secret when restoring sessions.
@@ -55,6 +55,6 @@ Then verify sign-in, a project read, and its saved mapping. Open editor tabs sho
 
 ## Rollback
 
-Stop the new app and restore the previous image. Restore the matching app-data backup if the release changed its format or configuration. Preserve environment values and volume ownership. Restore content rows only when they changed and need a separate content rollback.
+Stop the new app and restore the previous image. With the published image, set the previous tag in `compose.yaml` or `BASEBUDDY_IMAGE`, then run `docker compose pull` and `docker compose up -d`. Restore the matching app-data backup if the release changed its format or configuration. Preserve environment values and volume ownership. Restore content rows only when they changed and need a separate content rollback.
 
 Normal production images keep test sign-in disabled at build time. Never deploy a Playwright test build or copy `.env.playwright` into production.

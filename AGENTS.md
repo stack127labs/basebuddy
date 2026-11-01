@@ -224,7 +224,7 @@ For UI changes, also run the relevant browser or Playwright checks from `docs/te
 
 ## Deployment and save safety
 
-Use the included Dockerfile and Compose files for container installs. Run one app instance. Browser creation of the first owner requires an environment-only `BASEBUDDY_SETUP_TOKEN`; CLI setup remains available without it. Prepare database-backed app-data tables through explicit migrations before using a restricted runtime role. Normal reads never create tables.
+Use the published image `ghcr.io/stack127labs/basebuddy` through `compose.yaml` for container installs (`compose.build.yaml` builds from source). All env, including branding and indexing, is read at runtime. Run one app instance. Browser creation of the first owner requires an environment-only `BASEBUDDY_SETUP_TOKEN`; CLI setup remains available without it. Prepare database-backed app-data tables through explicit migrations before using a restricted runtime role. Normal reads never create tables.
 
 App-data updates compare the current stored document or acquire a cross-process file lock. Updater callbacks must tolerate retries. Content writes lock the main row before patch reads. Keep saved-content version tokens separate from editable timestamp values. Never change user table schemas to add concurrency metadata.
 

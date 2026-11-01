@@ -11,7 +11,23 @@ describe("BaseBuddy branding", () => {
     });
   });
 
-  it("uses build-time public branding values when provided", () => {
+  it("prefers runtime BASEBUDDY_* branding values", () => {
+    expect(
+      getBaseBuddyBranding({
+        BASEBUDDY_APP_NAME: "Runtime CMS",
+        BASEBUDDY_DOCS_URL: "https://runtime-docs.example.com",
+        BASEBUDDY_SUPPORT_URL: " ",
+        NEXT_PUBLIC_BASEBUDDY_APP_NAME: "Legacy CMS",
+        NEXT_PUBLIC_BASEBUDDY_SUPPORT_URL: "https://legacy-support.example.com",
+      }),
+    ).toEqual({
+      appName: "Runtime CMS",
+      docsUrl: "https://runtime-docs.example.com",
+      supportUrl: "https://legacy-support.example.com",
+    });
+  });
+
+  it("still accepts the legacy NEXT_PUBLIC_* branding names", () => {
     expect(
       getBaseBuddyBranding({
         NEXT_PUBLIC_BASEBUDDY_APP_NAME: "Studio CMS",

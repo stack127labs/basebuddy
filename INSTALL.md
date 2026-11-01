@@ -13,7 +13,7 @@ You can also store BaseBuddy app data in Supabase/Postgres:
 - `BASEBUDDY_APP_STATE_BACKEND=supabase-same-project` stores app data in the same database as your content, inside the BaseBuddy-owned `basebuddy` schema.
 - `BASEBUDDY_APP_STATE_BACKEND=supabase-split-project` plus `BASEBUDDY_APP_STATE_DATABASE_URL` stores app data in a separate database.
 
-For a container installation, use the tested [Docker deployment guide](./docs/deployment.md). It includes persistence, HTTPS, and upgrade instructions.
+For a container installation, use the published image `ghcr.io/stack127labs/basebuddy` and the tested [Docker deployment guide](./docs/deployment.md). It includes persistence, HTTPS, and upgrade instructions.
 
 ## Prerequisites
 

@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 
 import { getDemoDomainRedirect } from "@/lib/domain-migration";
 import { buildContentSecurityPolicy } from "@/lib/security/headers";
+import { getRobotsTagHeaderValue } from "@/lib/site-indexing";
 
 export async function middleware(request: NextRequest) {
   const redirectUrl = getDemoDomainRedirect(
@@ -31,6 +32,12 @@ export async function middleware(request: NextRequest) {
     },
   });
   response.headers.set("Content-Security-Policy", contentSecurityPolicy);
+
+  // Set per request (not in next.config headers) so runtime env controls page indexing.
+  const robotsTag = getRobotsTagHeaderValue();
+  if (robotsTag) {
+    response.headers.set("X-Robots-Tag", robotsTag);
+  }
 
   return response;
 }

@@ -18,9 +18,18 @@ COPY public ./public
 COPY e2e ./e2e
 COPY scripts ./scripts
 COPY src ./src
-RUN pnpm build
+# Drop the build cache and trace (about 640 MB) so the runtime image only ships what next start needs.
+RUN pnpm build && rm -rf .next/cache .next/trace && mkdir -p .next/cache
 
 FROM base AS runner
+ARG BASEBUDDY_VERSION=dev
+LABEL org.opencontainers.image.title="BaseBuddy" \
+      org.opencontainers.image.description="Self-hosted editor for existing Postgres and Supabase schemas." \
+      org.opencontainers.image.source="https://github.com/stack127labs/basebuddy" \
+      org.opencontainers.image.url="https://basebuddy.stack127.com" \
+      org.opencontainers.image.documentation="https://github.com/stack127labs/basebuddy/blob/main/docs/deployment.md" \
+      org.opencontainers.image.licenses="AGPL-3.0-or-later" \
+      org.opencontainers.image.version="${BASEBUDDY_VERSION}"
 ENV NODE_ENV=production PORT=8080 HOSTNAME=0.0.0.0
 RUN addgroup -S -g 10001 basebuddy && adduser -S -D -H -u 10001 -G basebuddy basebuddy \
     && mkdir -p /app/basebuddy-data && chown 10001:10001 /app/basebuddy-data

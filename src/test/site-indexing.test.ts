@@ -13,6 +13,7 @@ describe("site indexing", () => {
   beforeEach(() => {
     process.env = { ...ORIGINAL_ENV };
     delete process.env.NEXT_PUBLIC_SITE_INDEXABLE;
+    delete process.env.BASEBUDDY_SITE_INDEXABLE;
   });
 
   afterEach(() => {
@@ -50,5 +51,15 @@ describe("site indexing", () => {
         userAgent: "*",
       },
     });
+  });
+
+  it("reads BASEBUDDY_SITE_INDEXABLE at call time and prefers it over the legacy name", () => {
+    process.env.NEXT_PUBLIC_SITE_INDEXABLE = "true";
+    process.env.BASEBUDDY_SITE_INDEXABLE = "false";
+    expect(isSearchIndexingEnabled()).toBe(false);
+
+    process.env.BASEBUDDY_SITE_INDEXABLE = "yes";
+    expect(isSearchIndexingEnabled()).toBe(true);
+    expect(getRobotsTagHeaderValue()).toBeNull();
   });
 });

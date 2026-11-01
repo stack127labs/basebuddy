@@ -81,7 +81,17 @@ By default, `basebuddy-data/basebuddy.config.json` stores BaseBuddy users, sessi
 
 ## Docker installation
 
-Use the included `Dockerfile` and `compose.yaml` to run BaseBuddy as a non-root user with persistent app data. Follow [Deployment](./docs/deployment.md) to configure environment values, authorize first-owner setup, and enable HTTPS.
+A ready-made image for `linux/amd64` and `linux/arm64` is published at `ghcr.io/stack127labs/basebuddy`. It runs as a non-root user and keeps app data in a persistent volume:
+
+```sh
+mkdir basebuddy && cd basebuddy
+curl -fsSLO https://raw.githubusercontent.com/stack127labs/basebuddy/v0.2.2/compose.yaml
+curl -fsSL -o .env https://raw.githubusercontent.com/stack127labs/basebuddy/v0.2.2/.env.example
+chmod 600 .env   # then fill in the required values
+docker compose up -d
+```
+
+Follow [Deployment](./docs/deployment.md) to configure environment values, authorize first-owner setup, enable HTTPS, upgrade, or build the image from source.
 
 ## Quick Start
 

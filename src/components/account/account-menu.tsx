@@ -6,8 +6,8 @@ import { useRouter } from "next/navigation";
 import { BookOpen, ChevronsUpDown, HelpCircle, LogOut, Settings, UserRound } from "lucide-react";
 import { toast } from "sonner";
 
+import { useBaseBuddyBranding } from "@/components/branding-provider";
 import { getUserInitials } from "@/lib/control-plane/utils";
-import { baseBuddyBranding } from "@/lib/branding";
 import { getProductionErrorMessage } from "@/lib/errors/user-facing";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -30,7 +30,7 @@ export function AccountMenu({ avatarUrl, email, name, variant = "icon" }: Accoun
   const router = useRouter();
   const [isSigningOut, setIsSigningOut] = useState(false);
   const initials = getUserInitials(email, name);
-  const { docsUrl, supportUrl } = baseBuddyBranding;
+  const { docsUrl, supportUrl } = useBaseBuddyBranding();
 
   const handleSignOut = async () => {
     if (isSigningOut) {

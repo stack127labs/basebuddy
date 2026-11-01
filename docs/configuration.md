@@ -84,16 +84,18 @@ Set `BASEBUDDY_SETUP_TOKEN` to at least 32 random characters before creating the
 
 Normal runtime accounts need `USAGE` on the `basebuddy` schema, `SELECT`, `INSERT`, and `UPDATE` on `basebuddy.app_state`, and `INSERT` on `basebuddy.audit_events`. Run migrations separately with an administrator. Normal reads and writes never create tables.
 
-## Public Env
+## Branding And Indexing
 
-Optional public env values:
+Optional values, read when the server starts, so they work with the published Docker image:
 
 ```sh
-NEXT_PUBLIC_BASEBUDDY_APP_NAME=BaseBuddy
-NEXT_PUBLIC_BASEBUDDY_DOCS_URL=https://basebuddy.stack127.com/docs
-NEXT_PUBLIC_BASEBUDDY_SUPPORT_URL=https://basebuddy.stack127.com/support
-NEXT_PUBLIC_SITE_INDEXABLE=false
+BASEBUDDY_APP_NAME=BaseBuddy
+BASEBUDDY_DOCS_URL=https://basebuddy.stack127.com/docs
+BASEBUDDY_SUPPORT_URL=https://basebuddy.stack127.com/support
+BASEBUDDY_SITE_INDEXABLE=false
 ```
+
+The older `NEXT_PUBLIC_BASEBUDDY_APP_NAME`, `NEXT_PUBLIC_BASEBUDDY_DOCS_URL`, `NEXT_PUBLIC_BASEBUDDY_SUPPORT_URL`, and `NEXT_PUBLIC_SITE_INDEXABLE` names still work the same way. When both are set, the `BASEBUDDY_*` name wins. API responses always send `X-Robots-Tag: noindex`.
 
 ## Content And Storage
 
